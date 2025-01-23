@@ -1,0 +1,23 @@
+{
+  "dependencies": {
+    "@types/react-router-dom": "^5.3.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^7.1.3"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "autoprefixer": "^10.4.20",
+    "bun-types": "^1.2.0",
+    "postcss": "^8.5.1",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.0.0"
+  },
+  "scripts": {
+    "dev": "bun run src/server.tsx",
+    "start": "bun run src/server.tsx",
+    "build:css": "npx tailwindcss -i ./src/index.css -o ./dist/output.css --watch"
+  }
+}

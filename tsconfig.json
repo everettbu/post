@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "types": ["bun-types"],
+    "jsx": "react",
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "strict": true,
+    "esModuleInterop": true
+  }
+}
