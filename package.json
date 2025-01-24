@@ -18,6 +18,7 @@
   "scripts": {
     "dev": "bun run src/server.tsx",
     "start": "bun run src/server.tsx",
-    "build:css": "npx tailwindcss -i ./src/index.css -o ./dist/output.css --watch"
+    "build:css": "npx tailwindcss -i ./src/index.css -o ./dist/output.css --watch",
+    "vercel-build": "bun run build"
   }
 }
