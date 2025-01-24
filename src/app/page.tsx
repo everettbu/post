@@ -22,17 +22,17 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Hero */}
-      <section className="min-h-screen flex items-center justify-center pt-12">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-6xl font-bold" style={{ color: 'var(--text-primary)' }}>
-            Hello, welcome to everettbutler.com
-          </h1>
-          <p className="mt-4 text-xl" style={{ color: 'var(--text-secondary)' }}>
-            I bought a domain, and deleted social media. This is where you can find me.
-          </p>
-        </div>
-      </section>
+        {/* Hero */}
+        <section className="min-h-screen flex items-center justify-center pt-12">
+          <div className="container mx-auto px-4 text-center">
+            <h1 className="text-6xl font-bold" style={{ color: 'var(--text-primary)' }}>
+              Hello, welcome to everettbutler.com
+            </h1>
+            <p className="mt-4 text-xl" style={{ color: 'var(--text-secondary)' }}>
+              I bought a domain, and deleted social media. This is where you can find me.
+            </p>
+          </div>
+        </section>
 
 
       {/* Simple Footer */}
