@@ -11,5 +11,8 @@
       "src": "/(.*)",
       "dest": "src/server.tsx"
     }
-  ]
+  ],
+  "buildCommand": "bun run build",
+  "outputDirectory": "dist",
+  "framework": "nextjs"
 } 

@@ -43,8 +43,8 @@ async function handler(req: Request) {
   });
 }
 
-// Start server if running directly (not imported)
-if (import.meta.main) {
+// Only start the server when running locally with Bun
+if (import.meta.main && process.env.NODE_ENV !== 'production') {
   const server = serve({
     port: 3000,
     fetch: handler
