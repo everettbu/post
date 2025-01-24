@@ -37,8 +37,6 @@ export default function DateGate({ onDateSubmit }: DateGateProps) {
       } catch (error) {
         console.error('Navigation error:', error);
       }
-    } else {
-      setError('Incorrect date. Please try again.');
     }
   };
 

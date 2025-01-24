@@ -3,19 +3,19 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen" suppressHydrationWarning={true}>
       {/* Nav Bar */}
-      <nav className="bg-white shadow-sm fixed w-full top-0 z-10">
+      <nav className="bg-foreground shadow-sm fixed w-full top-0 z-10">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center h-16">
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 text-gray-500 hover:text-gray-700">
             <Link href="/" className="text-xl font-semibold">Everett Butler</Link>
             </div>
             <div className="hidden md:block">
               <div className="ml-10 flex items-center space-x-8">
-                <a href="#timeline" className="text-gray-600 hover:text-gray-900">Timeline</a>
-                <a href="#adventures" className="text-gray-600 hover:text-gray-900">Adventures</a>
-                <a href="#photos" className="text-gray-600 hover:text-gray-900">Photos</a>
+                <a href="#timeline" className="text-gray-500 hover:text-gray-700">Timeline</a>
+                <a href="#adventures" className="text-gray-500 hover:text-gray-700">Adventures</a>
+                <a href="#photos" className="text-gray-500 hover:text-gray-700">Photos</a>
               </div>
             </div>
           </div>
@@ -24,13 +24,10 @@ export default function Home() {
 
         {/* Hero */}
         <section className="min-h-screen flex items-center justify-center pt-12">
-          <div className="container mx-auto px-4 text-center">
+          <div className=" px-4 text-center">
             <h1 className="text-6xl font-bold" style={{ color: 'var(--text-primary)' }}>
-              Hello, welcome to everettbutler.com
+              Hello,
             </h1>
-            <p className="mt-4 text-xl" style={{ color: 'var(--text-secondary)' }}>
-              I bought a domain, and deleted social media. This is where you can find me.
-            </p>
           </div>
         </section>
 

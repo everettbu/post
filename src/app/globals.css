@@ -4,6 +4,7 @@
 
 :root {
   --background: #0f1827;
+  --foreground: #e5e5e6;
   
   /* Text colors */
   --text-primary: #f8fafc;    /* slate-50 for headings */
