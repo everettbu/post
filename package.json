@@ -12,14 +12,14 @@
     "autoprefixer": "^10.4.20",
     "bun-types": "^1.2.0",
     "postcss": "^8.5.1",
-    "tailwindcss": "^4.0.0",
+    "tailwindcss": "^3.3.0",
     "typescript": "^5.0.0"
   },
   "scripts": {
     "dev": "bun run src/server.tsx",
     "start": "bun run src/server.tsx",
-    "build:css": "npx tailwindcss -i ./src/index.css -o ./dist/output.css",
+    "build:css": "NODE_ENV=production ./node_modules/.bin/tailwindcss -i ./src/index.css -o ./dist/output.css --minify",
     "build": "bun build ./src/index.tsx --outdir=./dist --target=browser",
-    "vercel-build": "bun run build && bun run build:css"
+    "vercel-build": "bun install && bun run build && bun run build:css"
   }
 }
