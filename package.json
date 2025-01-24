@@ -24,5 +24,9 @@
     "eslint-config-next": "15.1.6",
     "@eslint/eslintrc": "^3"
   },
-  "type": "module"
+  "type": "module",
+  "engines": {
+    "bun": ">=1.0.0"
+  },
+  "use-bun": true
 }
