@@ -18,7 +18,8 @@
   "scripts": {
     "dev": "bun run src/server.tsx",
     "start": "bun run src/server.tsx",
-    "build:css": "npx tailwindcss -i ./src/index.css -o ./dist/output.css --watch",
-    "vercel-build": "bun run build"
+    "build:css": "npx tailwindcss -i ./src/index.css -o ./dist/output.css",
+    "build": "bun build ./src/index.tsx --outdir=./dist --target=browser",
+    "vercel-build": "bun run build && bun run build:css"
   }
 }
