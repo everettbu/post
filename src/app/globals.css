@@ -3,14 +3,39 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0f1827;
+  
+  /* Text colors */
+  --text-primary: #f8fafc;    /* slate-50 for headings */
+  --text-secondary: #cbd5e1;  /* slate-300 for body text */
+  --text-tertiary: #94a3b8;   /* slate-400 for subtle text */
+  
+  /* Interactive colors */
+  --text-hover: #ffffff;
+  --text-active: #ffffff;
+}
+
+@layer components {
+  .text-primary {
+    color: var(--text-primary);
+  }
+  .text-secondary {
+    color: var(--text-secondary);
+  }
+  .text-tertiary {
+    color: var(--text-tertiary);
+  }
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    
+    /* Colors stay the same in dark mode, but you can adjust if needed */
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-tertiary: #94a3b8;
   }
 }
 
