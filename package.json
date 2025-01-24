@@ -19,7 +19,7 @@
     "dev": "bun run src/server.tsx",
     "start": "bun run src/server.tsx",
     "build:css": "NODE_ENV=production ./node_modules/.bin/tailwindcss -i ./src/index.css -o ./dist/output.css --minify",
-    "build": "bun build ./src/index.tsx --outdir=./dist --target=browser",
+    "build": "bun build ./src/index.tsx --outdir=./dist --target=browser --minify",
     "vercel-build": "bun install && bun run build && bun run build:css"
   }
 }
