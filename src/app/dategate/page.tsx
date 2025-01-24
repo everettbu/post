@@ -15,14 +15,13 @@ export default function GatePage() {
   return (
     <div className="h-screen flex flex-col items-center justify-center bg-[var(--background)]">
       <div className="container mx-auto px-4 text-center mb-8">
-        <h1 className="text-4xl md:text-6xl font-bold" style={{ color: 'var(--text-primary)' }}>
+        <h1 className="text-8xl md:text-7xl font-bold" style={{ color: 'var(--text-primary)' }}>
           Hello, welcome to everettbutler.com
         </h1>
-        <p className="mt-4 text-lg md:text-xl" style={{ color: 'var(--text-secondary)' }}>
+        <p className="mt-4 text-lg md:text-2xl" style={{ color: 'var(--text-secondary)' }}>
           I bought a domain, and deleted social media. This is where you can find me.
         </p>
       </div>
-      
       <DateGate onDateSubmit={handleDateSubmit} />
     </div>
   );

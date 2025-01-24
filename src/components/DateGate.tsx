@@ -43,8 +43,11 @@ export default function DateGate({ onDateSubmit }: DateGateProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
+    <form onSubmit={handleSubmit} className="space-y-4 mt-12">
+      <p className="text-lg mb-4 text-center" style={{ color: 'var(--text-secondary)' }}>
+        Enter birthday for access
+      </p>
+      <div className="flex items-center gap-4 justify-center">
         <input
           type="date"
           value={date}
@@ -52,14 +55,14 @@ export default function DateGate({ onDateSubmit }: DateGateProps) {
           className="p-2 border rounded"
           required
         />
+        <button 
+          type="submit" 
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+        >
+          Enter
+        </button>
       </div>
-      {error && <p className="text-red-500 text-sm">{error}</p>}
-      <button 
-        type="submit" 
-        className="block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-      >
-        Enter
-      </button>
+      {error && <p className="text-red-500 text-sm text-center">{error}</p>}
     </form>
   );
 } 
