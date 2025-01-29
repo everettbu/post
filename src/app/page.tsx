@@ -26,7 +26,7 @@ export default function Home() {
         <section className="min-h-screen flex items-center justify-center pt-12">
           <div className=" px-4 text-center">
             <h1 className="text-6xl font-bold" style={{ color: 'var(--text-primary)' }}>
-              Hello,
+              Hello
             </h1>
           </div>
         </section>

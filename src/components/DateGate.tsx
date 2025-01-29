@@ -45,7 +45,7 @@ export default function DateGate({ onDateSubmit }: DateGateProps) {
       <p className="text-lg mb-4 text-center" style={{ color: 'var(--text-secondary)' }}>
         Enter birthday for access
       </p>
-      <div className="flex items-center gap-4 justify-center">
+      <div className="flex items-center gap-4 justify-center" style={{ color: 'var(--text-tertiary)' }}>
         <input
           type="date"
           value={date}
@@ -60,7 +60,6 @@ export default function DateGate({ onDateSubmit }: DateGateProps) {
           Enter
         </button>
       </div>
-      {error && <p className="text-red-500 text-sm text-center">{error}</p>}
     </form>
   );
 } 
