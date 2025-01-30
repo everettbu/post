@@ -1,5 +1,5 @@
 import React from "react";
-import PhotoGrid from "@/components/PhotoGrid";
+import PhotoGrid from "@/components/pages/PhotoGrid";
 import { CommentProvider } from "@/components/pages/CommentContext";
 
 export default function PhotosPage() {

@@ -6,56 +6,10 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle, X } from 'lucide-react';
 import { CommentSection } from "@/components/pages/CommentSection";
-
-interface Photo {
-  id: string;
-  url: string;
-  caption: string;
-  likes: number;
-  date: string;
-}
+import { Photo, initialPhotos } from '@/data/photos';
 
 export default function PhotoGrid() {
-  const [photos, setPhotos] = useState<Photo[]>([
-    // Sample data - replace with your actual photos
-    {
-      id: '1',
-      url: '/photos/matthew.jpg',
-      caption: 'Not',
-      likes: 0,
-      date: '2025-01-30'
-    },    
-    {
-      id: '2',
-      url: '/photos/sample-photo-2.jpg',
-      caption: 'HERE',
-      likes: 0,
-      date: '2024-03-20'
-    },
-    {
-      id: '3',
-      url: '/photos/sample-photo-3.jpg',
-      caption: '',
-      likes: 0,
-      date: '2024-03-20'
-    },
-    {
-       id: '4',
-       url: '/photos/sample-photo-4.jpg',
-       caption: 'Cheese',
-       likes: 0,
-       date: '2024-03-20'
-    },
-
-    
-
-
-
-
-
-
-
-  ]);
+  const [photos, setPhotos] = useState<Photo[]>(initialPhotos);
 
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
   const [viewingPhoto, setViewingPhoto] = useState<Photo | null>(null);
@@ -88,7 +42,7 @@ export default function PhotoGrid() {
               />
             </CardContent>
             <CardFooter className="flex justify-between p-4">
-              <div className="flex gap-4">
+              <div className="flex gap-2">
                 <Button 
                   variant="ghost" 
                   size="sm" 
@@ -109,7 +63,11 @@ export default function PhotoGrid() {
                 </Button>
               </div>
               <span className="text-sm text-muted-foreground">
-                {new Date(photo.date).toLocaleDateString()}
+                {new Date(photo.date).toLocaleDateString('en-US', {
+                  month: '2-digit',
+                  day: '2-digit',
+                  year: 'numeric'
+                }).replace(/\//g, '-')}
               </span>
             </CardFooter>
           </Card>
