@@ -1,4 +1,5 @@
-import TravelMap from "@/components/TravelMap";
+import React from "react";
+import TravelMap from "@/components/pages/TravelMap";
 
 export default function TravelPage() {
   return (

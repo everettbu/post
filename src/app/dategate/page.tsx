@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import DateGate from '../../components/DateGate';
+import DateGate from '@/components/pages/DateGate';
 
 export default function GatePage() {
   const router = useRouter();

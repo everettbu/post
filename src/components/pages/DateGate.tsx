@@ -6,16 +6,22 @@ interface DateGateProps {
   onDateSubmit: (date: string) => void;
 }
 
-export default function DateGate({ onDateSubmit }: DateGateProps) {
+const DateGate = ({ onDateSubmit }: DateGateProps) => {
+  const [mounted, setMounted] = useState(false);
   const [date, setDate] = useState('');
   const router = useRouter();
 
   useEffect(() => {
+    setMounted(true);
     const dateSubmitted = document.cookie.includes('date-submitted=true');
     if (dateSubmitted) {
       router.push('/');
     }
   }, [router]);
+
+  if (!mounted) {
+    return null;
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,7 +54,7 @@ export default function DateGate({ onDateSubmit }: DateGateProps) {
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          className="p-2 border rounded"
+          className="p-2 border rounded text-black"
           required
         />
         <button 
@@ -60,4 +66,6 @@ export default function DateGate({ onDateSubmit }: DateGateProps) {
       </div>
     </form>
   );
-} 
+};
+
+export default DateGate; 

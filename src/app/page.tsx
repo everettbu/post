@@ -1,33 +1,10 @@
 import React from "react";
 import Link from "next/link";
-import { FeaturedSection } from "@/components/FeaturedSection";
+import { FeaturedSection } from "@/components/home/FeaturedSection";
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Nav Bar */}
-      <nav className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 fixed w-full top-0 z-10">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex-shrink-0">
-              <Link href="/" className="text-xl font-semibold text-foreground hover:text-primary transition-colors">
-                Everett Butler
-              </Link>
-            </div>
-            <div className="hidden md:flex items-center space-x-8">
-              <Link href="#timeline" className="text-muted-foreground hover:text-primary transition-colors">
-                Timeline
-              </Link>
-              <Link href="#adventures" className="text-muted-foreground hover:text-primary transition-colors">
-                Adventures
-              </Link>
-              <Link href="#photos" className="text-muted-foreground hover:text-primary transition-colors">
-                Photos
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
 
       {/* Hero Section */}
       <section className="min-h-screen flex flex-col items-center justify-center pt-16 px-4 relative bg-[url('/hero.jpg')] bg-cover bg-[center_20%]">
