@@ -1,5 +1,4 @@
 import React from "react";
-import Link from "next/link";
 import { FeaturedSection } from "@/components/home/FeaturedSection";
 
 export default function Home() {

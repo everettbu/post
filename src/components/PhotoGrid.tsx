@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle, MessageSquare } from 'lucide-react';
+import { Heart, MessageCircle, X } from 'lucide-react';
 import { CommentSection } from "@/components/pages/CommentSection";
 
 interface Photo {
@@ -20,10 +20,10 @@ export default function PhotoGrid() {
     // Sample data - replace with your actual photos
     {
       id: '1',
-      url: '/photos/sample-photo-1.jpg',
-      caption: 'Beautiful sunset in Tokyo',
+      url: '/photos/matthew.jpg',
+      caption: 'Not',
       likes: 0,
-      date: '2024-03-20'
+      date: '2025-01-30'
     },    
     {
       id: '2',
@@ -40,12 +40,12 @@ export default function PhotoGrid() {
       date: '2024-03-20'
     },
     {
-        id: '4',
-        url: '/photos/sample-photo-4.jpg',
-        caption: 'Cheese',
-        likes: 0,
-        date: '2024-03-20'
-      },
+       id: '4',
+       url: '/photos/sample-photo-4.jpg',
+       caption: 'Cheese',
+       likes: 0,
+       date: '2024-03-20'
+    },
 
     
 
@@ -58,6 +58,7 @@ export default function PhotoGrid() {
   ]);
 
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+  const [viewingPhoto, setViewingPhoto] = useState<Photo | null>(null);
 
   // Sort photos by ID in descending order (reversed)
   const sortedPhotos = [...photos].sort((a, b) => 
@@ -73,11 +74,11 @@ export default function PhotoGrid() {
   };
 
   return (
-    <>
+    <div suppressHydrationWarning={true}>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {sortedPhotos.map((photo) => (
           <Card key={photo.id} className="overflow-hidden bg-card">
-            <CardContent className="p-0 relative aspect-square">
+            <CardContent className="p-0 relative aspect-square cursor-pointer" onClick={() => setViewingPhoto(photo)}>
               <Image
                 src={photo.url}
                 alt={photo.caption}
@@ -115,12 +116,41 @@ export default function PhotoGrid() {
         ))}
       </div>
 
+      {/* Photo Viewing Modal */}
+      {viewingPhoto && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50" onClick={() => setViewingPhoto(null)}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-4 right-4 z-50 text-white hover:bg-white/20"
+            onClick={(e) => {
+              e.stopPropagation();
+              setViewingPhoto(null);
+            }}
+          >
+            <X className="h-6 w-6" />
+          </Button>
+          <div className="relative w-full max-w-6xl h-[95vh] m-4 flex items-center justify-center">
+            <div className="relative w-full h-full" onClick={(e) => e.stopPropagation()}>
+              <Image
+                src={viewingPhoto.url}
+                alt={viewingPhoto.caption}
+                fill
+                className="object-contain scale-125 transition-transform duration-300"
+                sizes="(max-width: 1920px) 100vw, 1920px"
+                priority
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       <CommentSection 
         photoId={selectedPhoto || ''}
         isOpen={!!selectedPhoto}
         onClose={() => setSelectedPhoto(null)}
         caption={photos.find(p => p.id === selectedPhoto)?.caption}
       />
-    </>
+    </div>
   );
 } 
