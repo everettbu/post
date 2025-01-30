@@ -8,7 +8,6 @@ interface DateGateProps {
 
 export default function DateGate({ onDateSubmit }: DateGateProps) {
   const [date, setDate] = useState('');
-  const [error, setError] = useState('');
   const router = useRouter();
 
   useEffect(() => {
@@ -28,7 +27,6 @@ export default function DateGate({ onDateSubmit }: DateGateProps) {
       const expires = new Date(Date.now() + 24 * 60 * 60 * 1000).toUTCString();
       document.cookie = `date-submitted=true; path=/; expires=${expires}; SameSite=Strict`;
       onDateSubmit(date);
-      setError('');
       try {
         router.push('/');
         setTimeout(() => {

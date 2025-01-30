@@ -2,46 +2,47 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #0f1827;
-  --foreground: #ededed;
-  
-  /* Text colors */
-  --text-primary: #f8fafc;    /* slate-50 for headings */
-  --text-secondary: #cbd5e1;  /* slate-300 for body text */
-  --text-tertiary: #94a3b8;   /* slate-400 for subtle text */
-  
-  /* Interactive colors */
-  --text-hover: #ffffff;
-  --text-active: #ffffff;
-}
-
-@layer components {
-  .text-primary {
-    color: var(--text-primary);
-  }
-  .text-secondary {
-    color: var(--text-secondary);
-  }
-  .text-tertiary {
-    color: var(--text-tertiary);
-  }
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Deep blue-black background with blue tinted foreground */
+    --background: 222 47% 8%;      /* #070c1f - slightly lighter dark blue */
+    --foreground: 210 40% 98%;     /* #F8FAFC - blue tinted white */
     
-    /* Colors stay the same in dark mode, but you can adjust if needed */
-    --text-primary: #f8fafc;
-    --text-secondary: #cbd5e1;
-    --text-tertiary: #94a3b8;
+    --card: 222 47% 5%;            /* #050913 - slightly lighter than background */
+    --card-foreground: 210 40% 98%;
+    
+    --popover: 222 47% 5%;
+    --popover-foreground: 210 40% 98%;
+    
+    /* Accent colors */
+    --primary: 217 91% 60%;        /* #3B82F6 - vibrant blue */
+    --primary-foreground: 210 40% 98%;
+    
+    --secondary: 217 19% 27%;      /* #334155 - muted blue-gray */
+    --secondary-foreground: 210 40% 98%;
+    
+    --muted: 217 19% 27%;
+    --muted-foreground: 215 20% 65%;  /* #94A3B8 - subtle blue-gray */
+    
+    --accent: 217 91% 60%;
+    --accent-foreground: 210 40% 98%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+    
+    --border: 217 19% 27%;
+    --input: 217 19% 27%;
+    --ring: 216 34% 17%;
+    
+    --radius: 0.5rem;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }
