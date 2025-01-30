@@ -1,8 +1,5 @@
 import React from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Camera, MapPin, Clock } from "lucide-react";
 import { FeaturedSection } from "@/components/FeaturedSection";
 
 export default function Home() {
@@ -37,7 +34,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-background/70 to-background z-0" />
         <div className="text-center space-y-6 relative z-10 -mt-32">
           <p className="text-2xl text-gray-200 max-w-2xl mx-auto">
-            If you're here, you know what I'm about.
+            If you&apos;re here, you know what I&apos;m about.
           </p>
           <h1 className="text-6xl font-bold text-white tracking-tight">
             Welcome to my website.

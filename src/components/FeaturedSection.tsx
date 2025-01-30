@@ -26,7 +26,7 @@ export function FeaturedSection() {
             <CardContent className="p-6 space-y-4">
               <Clock className="h-8 w-8 text-primary" />
               <h3 className="text-xl font-semibold text-foreground">Timeline</h3>
-              <p className="text-muted-foreground">A journey through time, documenting life's adventures.</p>
+              <p className="text-muted-foreground">A journey through time, documenting life&apos;s adventures.</p>
             </CardContent>
           </Card>
         </div>
