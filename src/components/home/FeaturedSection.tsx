@@ -12,14 +12,15 @@ export function FeaturedSection() {
             <CardContent className="p-6 space-y-4">
               <Camera className="h-8 w-8 text-primary" />
               <h3 className="text-xl font-semibold text-foreground">Photo Reel</h3>
-              <p className="text-muted-foreground">Stuff I want to share on the internet with you, leaving a digital footprint.</p>
+              <p className="text-muted-foreground">Stuff I want to share on the internet with you, leaving my digital footprint.</p>
             </CardContent>
           </Card>
           <Card className="bg-card/50 backdrop-blur-sm border-primary/10 hover:border-primary/20 transition-colors">
             <CardContent className="p-6 space-y-4">
               <MapPin className="h-8 w-8 text-primary" />
               <h3 className="text-xl font-semibold text-foreground">Travel</h3>
-              <p className="text-muted-foreground">Places I've been outside of the US and photos of my travels.</p>
+              <p className="text-muted-foreground">Places I&apos;ve been outside of the US and photos of my travels.</p>
+              
             </CardContent>
           </Card>
           <Card className="bg-card/50 backdrop-blur-sm border-primary/10 hover:border-primary/20 transition-colors">
