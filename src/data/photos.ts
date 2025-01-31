@@ -23,7 +23,7 @@ export const initialPhotos: Photo[] = [
     id: '2',
     url: '/photos/carp.jpg',
     caption: 'Holy Carp',
-    date: '07-12-2015',
+    date: '04-12-2023',
     likes: 0
   },
   {
