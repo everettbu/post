@@ -10,12 +10,12 @@ const timelineData: TimelineItem[] = [
   {
     date: "May 2024",
     title: "Graduated from Claremont McKenna College",
-    description: "Recieved a bachelor's degree in Computer Science and Minor in Leadership",
+    description: "Received a bachelor's degree in Computer Science and Minor in Leadership.",
   },
   {
     date: "September 2024",
     title: "Started working at Greptile",
-    description: "Hired as Growth Engineer/Marketing person, 2nd full-time employee",
+    description: "Moved into Chinatown appartment in San Francisco. Hired as Growth Engineer/Marketing person, 2nd full-time employee.",
   },
 
 ];
