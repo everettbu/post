@@ -2,8 +2,13 @@ export interface Photo {
   id: string;
   url: string;
   caption: string;
-  likes: number;
   date: string;
+  likes: number;
+}
+
+export interface PhotoLikes {
+  photoId: string;
+  count: number;
 }
 
 export const initialPhotos: Photo[] = [
@@ -11,28 +16,28 @@ export const initialPhotos: Photo[] = [
     id: '1',
     url: '/photos/matthew.jpg',
     caption: 'Not here',
-    likes: 0,
-    date: '09-14-2001'
+    date: '09-14-2001',
+    likes: 0
   },    
   {
     id: '2',
-    url: '/photos/sample-photo-2.jpg',
+    url: '/photos/matthew.jpg',
     caption: 'HERE',
-    likes: 0,
-    date: '2024-03-20'
+    date: '2024-03-20',
+    likes: 0
   },
   {
     id: '3',
-    url: '/photos/sample-photo-3.jpg',
+    url: '/photos/matthew.jpg',
     caption: '',
-    likes: 0,
-    date: '2024-03-20'
+    date: '2024-03-20',
+    likes: 0
   },
   {
     id: '4',
     url: '/photos/matthew.jpg',
     caption: 'Cheese',
-    likes: 0,
-    date: '2024-01-20'
+    date: '2024-01-20',
+    likes: 0
   }
 ];

@@ -32,6 +32,10 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+.env.local
+*.db
+photo-gallery.db
+photo-data.db
 
 # vercel
 .vercel

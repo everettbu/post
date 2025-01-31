@@ -1,15 +1,26 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle, X } from 'lucide-react';
 import { CommentSection } from "@/components/pages/CommentSection";
 import { Photo, initialPhotos } from '@/data/photos';
+import { supabase } from '@/lib/supabase';
+import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+
+// Update interface
+interface PhotoLikePayload {
+  new: {
+    photo_id: string;
+    count: number;
+  };
+}
 
 export default function PhotoGrid() {
-  const [photos, setPhotos] = useState<Photo[]>(initialPhotos);
+  const [photos] = useState<Photo[]>(initialPhotos);
+  const [likes, setLikes] = useState<Record<string, number>>({});
 
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
   const [viewingPhoto, setViewingPhoto] = useState<Photo | null>(null);
@@ -19,12 +30,78 @@ export default function PhotoGrid() {
     parseInt(b.id) - parseInt(a.id)
   );
 
-  const handleLike = (photoId: string) => {
-    setPhotos(photos.map(photo => 
-      photo.id === photoId 
-        ? { ...photo, likes: photo.likes + 1 }
-        : photo
-    ));
+  // Load initial likes
+  useEffect(() => {
+    const fetchLikes = async () => {
+      const { data, error } = await supabase
+        .from('photo_likes')
+        .select('photo_id, count');
+      
+      if (error) {
+        console.error('Error fetching likes:', error);
+        return;
+      }
+
+      const likesMap = Object.fromEntries(
+        data.map(item => [item.photo_id, item.count])
+      );
+      setLikes(likesMap);
+    };
+
+    fetchLikes();
+
+    // Subscribe to changes
+    const channel = supabase.channel('photo_likes_changes');
+    
+    channel
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'photo_likes'
+        },
+        (payload: RealtimePostgresChangesPayload<PhotoLikePayload>) => {
+          console.log('Received update:', payload);
+          const newData = payload.new as { photo_id: string; count: number };
+          if (newData) {
+            setLikes(current => ({
+              ...current,
+              [newData.photo_id]: newData.count
+            }));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      channel.unsubscribe();
+    };
+  }, []);
+
+  const handleLike = async (photoId: string) => {
+    try {
+      // Optimistically update the UI
+      setLikes(current => ({
+        ...current,
+        [photoId]: (current[photoId] || 0) + 1
+      }));
+
+      const { error } = await supabase.rpc('increment_like', {
+        photo_id_input: photoId
+      });
+
+      if (error) {
+        // Revert on error
+        setLikes(current => ({
+          ...current,
+          [photoId]: (current[photoId] || 1) - 1
+        }));
+        throw error;
+      }
+    } catch (err: unknown) {
+      console.error('Error incrementing like:', err instanceof Error ? err.message : err);
+    }
   };
 
   return (
@@ -49,8 +126,8 @@ export default function PhotoGrid() {
                   onClick={() => handleLike(photo.id)}
                   className="flex items-center gap-1"
                 >
-                  <Heart className={`w-5 h-5 ${photo.likes > 0 ? 'fill-red-500 text-red-500' : ''}`} />
-                  <span>{photo.likes}</span>
+                  <Heart className={`w-5 h-5 ${likes[photo.id] > 0 ? 'fill-red-500 text-red-500' : ''}`} />
+                  <span>{likes[photo.id] || 0}</span>
                 </Button>
                 <Button 
                   variant="ghost" 
