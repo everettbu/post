@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useComments } from './CommentContext';
+import { Loader2 } from 'lucide-react';
 
 interface CommentSectionProps {
   photoId: string;
@@ -19,21 +20,24 @@ interface CommentSectionProps {
 }
 
 export function CommentSection({ photoId, isOpen, onClose, caption }: CommentSectionProps) {
-  const { comments, addComment } = useComments();
+  const { comments, addComment, isLoading } = useComments();
   const [username, setUsername] = useState('');
   const [content, setContent] = useState('');
   const [usernameSubmitted, setUsernameSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (username.trim() && content.trim()) {
-      addComment(photoId, username, content);
+      setIsSubmitting(true);
+      await addComment(photoId, username, content);
       setContent('');
       setUsernameSubmitted(true);
+      setIsSubmitting(false);
     }
   };
 
-  const photoComments = comments.filter(comment => comment.photoId === photoId);
+  const photoComments = comments.filter(comment => comment.photo_id === photoId);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -51,19 +55,25 @@ export function CommentSection({ photoId, isOpen, onClose, caption }: CommentSec
         )}
 
         <div className="h-[300px] overflow-y-auto pr-4">
-          {photoComments.map((comment) => (
-            <div key={comment.id} className="flex gap-3 mb-4">
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold">{comment.username}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {new Date(comment.timestamp).toLocaleString()}
-                  </span>
-                </div>
-                <p className="text-sm">{comment.content}</p>
-              </div>
+          {isLoading ? (
+            <div className="flex justify-center items-center h-full">
+              <Loader2 className="h-6 w-6 animate-spin" />
             </div>
-          ))}
+          ) : (
+            photoComments.map((comment) => (
+              <div key={comment.id} className="flex gap-3 mb-4">
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold">{comment.username}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(comment.created_at).toLocaleString()}
+                    </span>
+                  </div>
+                  <p className="text-sm">{comment.content}</p>
+                </div>
+              </div>
+            ))
+          )}
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-2 mt-4">
@@ -81,8 +91,15 @@ export function CommentSection({ photoId, isOpen, onClose, caption }: CommentSec
               value={content}
               onChange={(e) => setContent(e.target.value)}
             />
-            <Button type="submit" disabled={!username || !content.trim()}>
-              Post
+            <Button 
+              type="submit" 
+              disabled={!username || !content.trim() || isSubmitting}
+            >
+              {isSubmitting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                'Post'
+              )}
             </Button>
           </div>
         </form>

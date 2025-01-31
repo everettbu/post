@@ -1,57 +1,117 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 interface Comment {
   id: string;
-  photoId: string;
-  username: string;
+  photo_id: string;
   content: string;
-  timestamp: string;
+  created_at: string;
+  user_id?: string;
+  username: string;  // We'll keep this for now, but ideally would come from users table
 }
 
 interface CommentContextType {
   comments: Comment[];
-  addComment: (photoId: string, username: string, content: string) => void;
-  deleteComment?: (commentId: string) => void; // Optional feature for later
+  addComment: (photoId: string, username: string, content: string) => Promise<void>;
+  deleteComment?: (commentId: string) => Promise<void>;
+  isLoading: boolean;
 }
 
 const CommentContext = createContext<CommentContextType | undefined>(undefined);
 
 export function CommentProvider({ children }: { children: React.ReactNode }) {
   const [comments, setComments] = useState<Comment[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Load comments from localStorage on initial render
+  // Load comments from Supabase on initial render
   useEffect(() => {
-    const savedComments = localStorage.getItem('photoComments');
-    if (savedComments) {
-      setComments(JSON.parse(savedComments));
-    }
+    const fetchComments = async () => {
+      const { data, error } = await supabase
+        .from('comments')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching comments:', error);
+        return;
+      }
+
+      setComments(data);
+      setIsLoading(false);
+    };
+
+    fetchComments();
+
+    // Subscribe to changes
+    const channel = supabase.channel('comments_channel');
+    
+    channel
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'comments'
+        },
+        (payload: RealtimePostgresChangesPayload<Comment>) => {
+          if (payload.eventType === 'INSERT') {
+            setComments(current => [payload.new as Comment, ...current]);
+          } else if (payload.eventType === 'DELETE') {
+            setComments(current => 
+              current.filter(comment => comment.id !== payload.old.id)
+            );
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      channel.unsubscribe();
+    };
   }, []);
 
-  const addComment = (photoId: string, username: string, content: string) => {
-    const newComment: Comment = {
-      id: Date.now().toString(),
-      photoId,
-      username,
-      content,
-      timestamp: new Date().toISOString(),
-    };
-    const updatedComments = [...comments, newComment];
-    setComments(updatedComments);
-    // Save to localStorage
-    localStorage.setItem('photoComments', JSON.stringify(updatedComments));
+  const addComment = async (photoId: string, username: string, content: string) => {
+    try {
+      const { error } = await supabase
+        .from('comments')
+        .insert([
+          {
+            photo_id: photoId,
+            username,
+            content,
+          }
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      // Optimistic update handled by real-time subscription
+    } catch (error) {
+      console.error('Error adding comment:', error);
+    }
   };
 
-  // Optional: Add delete functionality
-  const deleteComment = (commentId: string) => {
-    const updatedComments = comments.filter(comment => comment.id !== commentId);
-    setComments(updatedComments);
-    localStorage.setItem('photoComments', JSON.stringify(updatedComments));
+  const deleteComment = async (commentId: string) => {
+    try {
+      const { error } = await supabase
+        .from('comments')
+        .delete()
+        .eq('id', commentId);
+
+      if (error) throw error;
+
+      // Optimistic update handled by real-time subscription
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+    }
   };
 
   return (
-    <CommentContext.Provider value={{ comments, addComment, deleteComment }}>
+    <CommentContext.Provider value={{ comments, addComment, deleteComment, isLoading }}>
       {children}
     </CommentContext.Provider>
   );
