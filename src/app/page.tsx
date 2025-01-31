@@ -1,5 +1,6 @@
 import React from "react";
 import { FeaturedSection } from "@/components/home/FeaturedSection";
+import { Timeline } from "@/components/home/Timeline";
 
 export default function Home() {
   return (
@@ -20,10 +21,28 @@ export default function Home() {
   
       <FeaturedSection />
 
+      {/* Timeline Section */}
+      <section className="py-24 bg-background">
+        <div className="container mx-auto">
+          <h2 className="text-4xl font-bold text-center mb-16">Timeline of Events Post Graduation</h2>
+          <Timeline />
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="border-t border-border/40 py-8 bg-background">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-muted-foreground">Made with ❤️ using Next.js and shadcn/ui</p>
+        <div className="container mx-auto px-4">
+          <nav className="mb-4">
+            <ul className="flex justify-center space-x-6">
+              <li>
+              </li>
+              <li>
+                <a href="/baboon-jokes" className="text-muted-foreground hover:text-foreground transition">
+                  Baboon Jokes
+                </a>
+              </li>
+            </ul>
+          </nav>
         </div>
       </footer>
     </div>

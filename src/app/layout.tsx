@@ -65,9 +65,6 @@ export default function RootLayout({
                   <Link href="gallery" className="text-muted-foreground hover:text-primary transition-colors">
                     Gallery
                   </Link>
-                  <Link href="timeline" className="text-muted-foreground hover:text-primary transition-colors">
-                    Timeline
-                  </Link>
                 </div>
               </div>
             </div>
