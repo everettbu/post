@@ -42,7 +42,7 @@ export default function RootLayout({
 
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body suppressHydrationWarning={true} className={inter.className}>
         {/* Nav Bar - Only show if not on dategate page */}
         {pathname !== '/dategate' && (
           <nav className={`border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 fixed w-full top-0 z-10 transition-transform duration-300 ${

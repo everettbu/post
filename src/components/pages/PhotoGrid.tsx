@@ -114,7 +114,7 @@ export default function PhotoGrid() {
                 src={photo.url}
                 alt={photo.caption}
                 fill
-                className="object-cover hover:scale-105 transition-transform duration-300"
+                className="object-cover hover:scale-103 transition-transform duration-300"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
             </CardContent>
@@ -171,7 +171,7 @@ export default function PhotoGrid() {
                 src={viewingPhoto.url}
                 alt={viewingPhoto.caption}
                 fill
-                className="object-contain scale-125 transition-transform duration-300"
+                className="object-contain scale-100 transition-transform duration-300"
                 sizes="(max-width: 1920px) 100vw, 1920px"
                 priority
               />
