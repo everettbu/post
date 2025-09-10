@@ -191,8 +191,9 @@ export default function FlappyBird() {
       }
     }
     
-    // Disable antialiasing for better performance
+    // Disable antialiasing for better performance and consistent pixel rendering
     ctx.imageSmoothingEnabled = false;
+    ctx.imageSmoothingQuality = 'low';
     
     ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     
@@ -254,7 +255,9 @@ export default function FlappyBird() {
       // Clean up pipes more efficiently
       const activePipes: Pipe[] = [];
       pipesRef.current.forEach(pipe => {
-        pipe.x -= adjustedSpeed;
+        // Use smoother movement calculation and round to prevent subpixel shaking
+        const newX = pipe.x - adjustedSpeed;
+        pipe.x = Math.round(newX * 2) / 2; // Round to nearest 0.5 pixel for smoother movement
         
         // Only keep pipes that are still visible
         if (pipe.x + PIPE_WIDTH > -50) {
@@ -279,9 +282,9 @@ export default function FlappyBird() {
     // Draw pipes with simplified rendering for better performance
     pipesRef.current.forEach(pipe => {
       const capHeight = 30;
-      // Round to prevent sub-pixel shaking
-      const pipeX = Math.floor(pipe.x);
-      const topHeight = Math.floor(pipe.topHeight);
+      // Use the already-rounded pipe.x position
+      const pipeX = Math.round(pipe.x);
+      const topHeight = Math.round(pipe.topHeight);
       
       // Top pipe - simplified
       ctx.fillStyle = '#4caf50';
@@ -565,11 +568,16 @@ export default function FlappyBird() {
             WebkitTouchCallout: 'none',
             WebkitUserSelect: 'none',
             userSelect: 'none',
-            transform: 'translate3d(0, 0, 0)',
+            transform: 'translateZ(0)',
+            WebkitTransform: 'translateZ(0)',
             backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden',
             perspective: 1000,
+            WebkitPerspective: 1000,
             willChange: 'transform',
-            contain: 'layout style paint'
+            contain: 'layout style paint',
+            WebkitFontSmoothing: 'antialiased',
+            MozOsxFontSmoothing: 'grayscale'
           }}
         />
         

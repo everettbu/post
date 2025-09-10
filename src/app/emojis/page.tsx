@@ -92,8 +92,7 @@ export default function EmojisPage() {
 
   return (
     <div className="min-h-screen p-8">
-      <h1 className="text-4xl font-bold mb-8">Emojis</h1>
-      <p className="text-gray-600 mb-6">Click any emoji to copy it to your clipboard</p>
+      <h1 className="text-2xl font-bold mb-8">Click any emoji to copy it to your clipboard</h1>
       
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
         {emojis.map((emoji, index) => (
@@ -111,17 +110,19 @@ export default function EmojisPage() {
               />
             </div>
             
-            {copiedIndex === index && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-75 rounded-lg">
-                <span className="text-white font-semibold">Copied!</span>
+            {copiedIndex !== index && (
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                <span className="bg-black bg-opacity-75 text-white px-2 py-1 rounded text-sm">
+                  Click to copy
+                </span>
               </div>
             )}
             
-            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-              <span className="bg-black bg-opacity-75 text-white px-2 py-1 rounded text-sm">
-                Click to copy
-              </span>
-            </div>
+            {copiedIndex === index && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-75 rounded-lg pointer-events-none">
+                <span className="text-white font-semibold">Copied!</span>
+              </div>
+            )}
           </div>
         ))}
       </div>
