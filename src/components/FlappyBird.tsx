@@ -163,15 +163,6 @@ export default function FlappyBird() {
     }
   };
   
-  const checkIfHighScore = useCallback(() => {
-    if (score === 0) return false;
-    // If no Supabase connection, always show high score input
-    if (!supabase) return true;
-    // If leaderboard has less than 10 entries, it's a high score
-    if (leaderboard.length < 10) return true;
-    // Check if score beats the 10th place
-    return score > leaderboard[9].score;
-  }, [score, leaderboard]);
   
   const checkCollision = (birdY: number, pipes: Pipe[]): boolean => {
     if (birdY <= 0 || birdY + BIRD_SIZE >= CANVAS_HEIGHT) {
