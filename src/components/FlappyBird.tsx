@@ -31,7 +31,7 @@ export default function FlappyBird() {
   const birdRef = useRef({
     y: 250,
     velocity: 0,
-    gravity: 0.7,
+    gravity: 0.6,
     jumpPower: -10
   });
   
@@ -45,26 +45,34 @@ export default function FlappyBird() {
   const imagesLoadedRef = useRef(false);
   const lastFrameTime = useRef(0);
   const gradientsRef = useRef<{ sky?: CanvasGradient; ground?: CanvasGradient }>({});
+  const deltaTimeRef = useRef(16.67);
   
   const CANVAS_WIDTH = 500;
   const CANVAS_HEIGHT = 700;
   const BIRD_SIZE = 100;
   const PIPE_WIDTH = 80;
   const PIPE_GAP = 200;
-  const PIPE_SPEED = 3;
+  const PIPE_SPEED = 2.5;
   
   const jump = useCallback(() => {
     if (showNameInput) {
       // Don't jump if name input is showing
       return;
     }
+    
+    // Use refs to avoid re-renders during gameplay
+    if (gameState === 'playing') {
+      // Just update the refs, no state changes
+      birdRef.current.velocity = birdRef.current.jumpPower;
+      flapAnimationRef.current = 25;
+      return;
+    }
+    
     if (gameState === 'idle') {
       birdRef.current.velocity = birdRef.current.jumpPower;
       flapAnimationRef.current = 25;
+      // Only state change is starting the game
       setGameState('playing');
-    } else if (gameState === 'playing') {
-      birdRef.current.velocity = birdRef.current.jumpPower;
-      flapAnimationRef.current = 25;
     } else if (gameState === 'gameOver') {
       resetGame();
     }
@@ -167,14 +175,20 @@ export default function FlappyBird() {
     const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) return;
     
-    // More consistent frame timing
+    // More consistent frame timing with delta tracking
     if (currentTime) {
-      const deltaTime = currentTime - lastFrameTime.current;
-      if (deltaTime < 16.67) { // Exact 60fps timing
-        requestRef.current = requestAnimationFrame(gameLoop);
-        return;
+      if (lastFrameTime.current === 0) {
+        lastFrameTime.current = currentTime;
+        deltaTimeRef.current = 16.67;
+      } else {
+        const deltaTime = currentTime - lastFrameTime.current;
+        if (deltaTime < 15) { // Skip if too fast
+          requestRef.current = requestAnimationFrame(gameLoop);
+          return;
+        }
+        deltaTimeRef.current = Math.min(deltaTime, 33); // Cap at 2 frames
+        lastFrameTime.current = currentTime;
       }
-      lastFrameTime.current = currentTime;
     }
     
     // Disable antialiasing for better performance
@@ -223,7 +237,7 @@ export default function FlappyBird() {
       birdRef.current.y += birdRef.current.velocity;
       
       frameCountRef.current++;
-      if (frameCountRef.current % 120 === 0) {
+      if (frameCountRef.current % 140 === 0) {
         const topHeight = Math.random() * (CANVAS_HEIGHT - PIPE_GAP - 100) + 50;
         pipesRef.current.push({
           x: CANVAS_WIDTH,
@@ -232,10 +246,15 @@ export default function FlappyBird() {
         });
       }
       
+      // Move pipes with consistent speed using delta time
+      const targetFPS = 60;
+      const frameDelta = deltaTimeRef.current / (1000 / targetFPS);
+      const adjustedSpeed = PIPE_SPEED * frameDelta;
+      
       // Clean up pipes more efficiently
       const activePipes: Pipe[] = [];
       pipesRef.current.forEach(pipe => {
-        pipe.x -= PIPE_SPEED;
+        pipe.x -= adjustedSpeed;
         
         // Only keep pipes that are still visible
         if (pipe.x + PIPE_WIDTH > -50) {
@@ -243,10 +262,10 @@ export default function FlappyBird() {
           
           if (!pipe.passed && pipe.x + PIPE_WIDTH < 50) {
             pipe.passed = true;
-            // Batch state updates to reduce re-renders
-            requestAnimationFrame(() => {
+            // Defer score update to next idle callback
+            setTimeout(() => {
               setScore(prev => prev + 1);
-            });
+            }, 0);
           }
         }
       });
