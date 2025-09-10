@@ -27,7 +27,6 @@ export default function FlappyBird() {
   const [playerName, setPlayerName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
-  const [imagesLoaded, setImagesLoaded] = useState(false);
   
   const birdRef = useRef({
     y: 250,
@@ -424,7 +423,7 @@ export default function FlappyBird() {
     }
     
     requestRef.current = requestAnimationFrame(gameLoop);
-  }, [gameState, score, highScore, checkIfHighScore, leaderboard, showNameInput]);
+  }, [gameState, score, leaderboard, showNameInput]);
   
   useEffect(() => {
     requestRef.current = requestAnimationFrame(gameLoop);
@@ -468,7 +467,6 @@ export default function FlappyBird() {
       loadedCount++;
       if (loadedCount === 2) {
         imagesLoadedRef.current = true;
-        setImagesLoaded(true);
       }
     };
     
