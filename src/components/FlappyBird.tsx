@@ -27,6 +27,7 @@ export default function FlappyBird() {
   const [playerName, setPlayerName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
   
   const birdRef = useRef({
     y: 250,
@@ -46,9 +47,9 @@ export default function FlappyBird() {
   
   const CANVAS_WIDTH = 500;
   const CANVAS_HEIGHT = 700;
-  const BIRD_SIZE = 50;
-  const PIPE_WIDTH = 60;
-  const PIPE_GAP = 140;
+  const BIRD_SIZE = 90;
+  const PIPE_WIDTH = 100;
+  const PIPE_GAP = 180;
   const PIPE_SPEED = 3;
   
   const jump = useCallback(() => {
@@ -209,7 +210,7 @@ export default function FlappyBird() {
       birdRef.current.y += birdRef.current.velocity;
       
       frameCountRef.current++;
-      if (frameCountRef.current % 90 === 0) {
+      if (frameCountRef.current % 120 === 0) {
         const topHeight = Math.random() * (CANVAS_HEIGHT - PIPE_GAP - 100) + 50;
         pipesRef.current.push({
           x: CANVAS_WIDTH,
@@ -324,24 +325,6 @@ export default function FlappyBird() {
     if (imagesLoadedRef.current && face1Ref.current && face2Ref.current) {
       const currentImage = flapAnimationRef.current > 0 ? face2Ref.current : face1Ref.current;
       ctx.drawImage(currentImage, -BIRD_SIZE/2, -BIRD_SIZE/2, BIRD_SIZE, BIRD_SIZE);
-    } else {
-      ctx.fillStyle = '#FFD700';
-      ctx.beginPath();
-      ctx.arc(0, 0, BIRD_SIZE/2, 0, Math.PI * 2);
-      ctx.fill();
-      
-      ctx.fillStyle = '#FFA500';
-      ctx.beginPath();
-      ctx.moveTo(BIRD_SIZE/2 - 5, 0);
-      ctx.lineTo(BIRD_SIZE/2 + 5, 0);
-      ctx.lineTo(BIRD_SIZE/2, 5);
-      ctx.closePath();
-      ctx.fill();
-      
-      ctx.fillStyle = '#000';
-      ctx.beginPath();
-      ctx.arc(-5, -5, 3, 0, Math.PI * 2);
-      ctx.fill();
     }
     
     ctx.restore();
@@ -485,6 +468,7 @@ export default function FlappyBird() {
       loadedCount++;
       if (loadedCount === 2) {
         imagesLoadedRef.current = true;
+        setImagesLoaded(true);
       }
     };
     
