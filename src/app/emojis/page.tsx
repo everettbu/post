@@ -21,31 +21,46 @@ export default function EmojisPage() {
 
   const handleCopyEmoji = async (emoji: string, index: number) => {
     try {
-      // Fetch the image
-      const response = await fetch(`/emojis/${emoji}`);
-      const blob = await response.blob();
+      // Check if on mobile
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
       
-      // Convert to PNG blob if needed
-      const pngBlob = blob.type === 'image/png' ? blob : await convertToPng(blob);
-      
-      // Try to copy as image
-      if (navigator.clipboard && window.ClipboardItem) {
-        await navigator.clipboard.write([
-          new ClipboardItem({
-            'image/png': pngBlob
-          })
-        ]);
+      if (isMobile && navigator.share) {
+        // Mobile: Use native share (allows copying to clipboard in iOS)
+        const response = await fetch(`/emojis/${emoji}`);
+        const blob = await response.blob();
+        const file = new File([blob], `emoji-${index + 1}.png`, { type: 'image/png' });
+        
+        await navigator.share({
+          files: [file],
+          title: 'Emoji',
+        });
         
         setCopiedIndex(index);
         setTimeout(() => setCopiedIndex(null), 2000);
       } else {
-        // Fallback: Copy image URL
-        await navigator.clipboard.writeText(window.location.origin + `/emojis/${emoji}`);
-        setCopiedIndex(index);
-        setTimeout(() => setCopiedIndex(null), 2000);
+        // Desktop: Copy to clipboard
+        const response = await fetch(`/emojis/${emoji}`);
+        const blob = await response.blob();
+        const pngBlob = blob.type === 'image/png' ? blob : await convertToPng(blob);
+        
+        if (navigator.clipboard && window.ClipboardItem) {
+          await navigator.clipboard.write([
+            new ClipboardItem({
+              'image/png': pngBlob
+            })
+          ]);
+          
+          setCopiedIndex(index);
+          setTimeout(() => setCopiedIndex(null), 2000);
+        } else {
+          // Fallback: Copy image URL
+          await navigator.clipboard.writeText(window.location.origin + `/emojis/${emoji}`);
+          setCopiedIndex(index);
+          setTimeout(() => setCopiedIndex(null), 2000);
+        }
       }
     } catch (err) {
-      console.error('Failed to copy emoji:', err);
+      console.error('Failed to handle emoji:', err);
       // Fallback: Copy image URL
       try {
         await navigator.clipboard.writeText(window.location.origin + `/emojis/${emoji}`);
