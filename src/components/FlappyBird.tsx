@@ -52,7 +52,7 @@ export default function FlappyBird() {
   const BIRD_SIZE = 100;
   const PIPE_WIDTH = 80;
   const PIPE_GAP = 200;
-  const PIPE_SPEED = 2.5;
+  const PIPE_SPEED = 3;
   
   const jump = useCallback(() => {
     if (showNameInput) {
@@ -237,7 +237,7 @@ export default function FlappyBird() {
       birdRef.current.y += birdRef.current.velocity;
       
       frameCountRef.current++;
-      if (frameCountRef.current % 140 === 0) {
+      if (frameCountRef.current % 125 === 0) {
         const topHeight = Math.random() * (CANVAS_HEIGHT - PIPE_GAP - 100) + 50;
         pipesRef.current.push({
           x: CANVAS_WIDTH,
