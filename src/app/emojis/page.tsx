@@ -31,8 +31,7 @@ export default function EmojisPage() {
         const file = new File([blob], `emoji-${index + 1}.png`, { type: 'image/png' });
         
         await navigator.share({
-          files: [file],
-          title: 'Emoji',
+          files: [file]
         });
         
         setCopiedIndex(index);

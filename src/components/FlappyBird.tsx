@@ -43,6 +43,8 @@ export default function FlappyBird() {
   const face1Ref = useRef<HTMLImageElement | null>(null);
   const face2Ref = useRef<HTMLImageElement | null>(null);
   const imagesLoadedRef = useRef(false);
+  const lastFrameTime = useRef(0);
+  const gradientsRef = useRef<{ sky?: CanvasGradient }>({});
   
   const CANVAS_WIDTH = 500;
   const CANVAS_HEIGHT = 700;
@@ -158,20 +160,36 @@ export default function FlappyBird() {
     return false;
   };
   
-  const gameLoop = useCallback(() => {
+  const gameLoop = useCallback((currentTime?: number) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
+    // Frame rate limiting for smoother performance
+    if (currentTime) {
+      const deltaTime = currentTime - lastFrameTime.current;
+      if (deltaTime < 16) { // Skip frame if running faster than 60fps
+        requestRef.current = requestAnimationFrame(gameLoop);
+        return;
+      }
+      lastFrameTime.current = currentTime;
+    }
+    
+    // Set canvas properties for better mobile performance
+    ctx.imageSmoothingEnabled = false;
+    
     ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     
-    // Sky gradient
-    const gradient = ctx.createLinearGradient(0, 0, 0, CANVAS_HEIGHT);
-    gradient.addColorStop(0, '#87CEEB');
-    gradient.addColorStop(1, '#98D8E8');
-    ctx.fillStyle = gradient;
+    // Sky gradient - cache it
+    if (!gradientsRef.current.sky) {
+      const gradient = ctx.createLinearGradient(0, 0, 0, CANVAS_HEIGHT);
+      gradient.addColorStop(0, '#87CEEB');
+      gradient.addColorStop(1, '#98D8E8');
+      gradientsRef.current.sky = gradient;
+    }
+    ctx.fillStyle = gradientsRef.current.sky;
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     
     // Initialize clouds if empty
@@ -237,67 +255,47 @@ export default function FlappyBird() {
       }
     }
     
-    // Draw pipes with 3D effect
+    // Draw pipes with simplified rendering for better performance
     pipesRef.current.forEach(pipe => {
       const capHeight = 30;
       
-      // Top pipe
-      // Main pipe gradient
-      const topGradient = ctx.createLinearGradient(pipe.x, 0, pipe.x + PIPE_WIDTH, 0);
-      topGradient.addColorStop(0, '#3e8e41');
-      topGradient.addColorStop(0.5, '#4caf50');
-      topGradient.addColorStop(1, '#2e7d32');
-      
-      ctx.fillStyle = topGradient;
+      // Top pipe - simplified
+      ctx.fillStyle = '#4caf50';
       ctx.fillRect(pipe.x, 0, PIPE_WIDTH, pipe.topHeight);
       
+      // Add simple shading
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+      ctx.fillRect(pipe.x + 5, 0, 10, pipe.topHeight - capHeight);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+      ctx.fillRect(pipe.x + PIPE_WIDTH - 15, 0, 10, pipe.topHeight - capHeight);
+      
       // Pipe cap (top)
-      const capGradient = ctx.createLinearGradient(pipe.x - 5, 0, pipe.x + PIPE_WIDTH + 5, 0);
-      capGradient.addColorStop(0, '#2e7d32');
-      capGradient.addColorStop(0.5, '#4caf50');
-      capGradient.addColorStop(1, '#1b5e20');
-      
-      ctx.fillStyle = capGradient;
+      ctx.fillStyle = '#3e8e41';
       ctx.fillRect(pipe.x - 5, pipe.topHeight - capHeight, PIPE_WIDTH + 10, capHeight);
-      
-      // Highlights and shadows
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-      ctx.fillRect(pipe.x + 5, 0, 5, pipe.topHeight - capHeight);
-      
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-      ctx.fillRect(pipe.x + PIPE_WIDTH - 10, 0, 5, pipe.topHeight - capHeight);
       
       // Bottom pipe
       const bottomY = pipe.topHeight + PIPE_GAP;
       const bottomHeight = CANVAS_HEIGHT - bottomY;
       
-      // Main pipe gradient
-      const bottomGradient = ctx.createLinearGradient(pipe.x, 0, pipe.x + PIPE_WIDTH, 0);
-      bottomGradient.addColorStop(0, '#3e8e41');
-      bottomGradient.addColorStop(0.5, '#4caf50');
-      bottomGradient.addColorStop(1, '#2e7d32');
-      
-      ctx.fillStyle = bottomGradient;
+      // Bottom pipe - simplified
+      ctx.fillStyle = '#4caf50';
       ctx.fillRect(pipe.x, bottomY + capHeight, PIPE_WIDTH, bottomHeight - capHeight);
       
+      // Add simple shading
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+      ctx.fillRect(pipe.x + 5, bottomY + capHeight, 10, bottomHeight - capHeight);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+      ctx.fillRect(pipe.x + PIPE_WIDTH - 15, bottomY + capHeight, 10, bottomHeight - capHeight);
+      
       // Pipe cap (bottom)
-      ctx.fillStyle = capGradient;
+      ctx.fillStyle = '#3e8e41';
       ctx.fillRect(pipe.x - 5, bottomY, PIPE_WIDTH + 10, capHeight);
       
-      // Highlights and shadows
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-      ctx.fillRect(pipe.x + 5, bottomY + capHeight, 5, bottomHeight - capHeight);
-      
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-      ctx.fillRect(pipe.x + PIPE_WIDTH - 10, bottomY + capHeight, 5, bottomHeight - capHeight);
-      
-      // Pipe borders for definition
-      ctx.strokeStyle = '#1b5e20';
-      ctx.lineWidth = 1;
+      // Simple borders
+      ctx.strokeStyle = '#2e7d32';
+      ctx.lineWidth = 2;
       ctx.strokeRect(pipe.x, 0, PIPE_WIDTH, pipe.topHeight);
-      ctx.strokeRect(pipe.x - 5, pipe.topHeight - capHeight, PIPE_WIDTH + 10, capHeight);
       ctx.strokeRect(pipe.x, bottomY, PIPE_WIDTH, bottomHeight);
-      ctx.strokeRect(pipe.x - 5, bottomY, PIPE_WIDTH + 10, capHeight);
     });
     
     // Draw ground
