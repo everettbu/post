@@ -31,8 +31,8 @@ export default function FlappyBird() {
   const birdRef = useRef({
     y: 250,
     velocity: 0,
-    gravity: 0.5,
-    jumpPower: -9
+    gravity: 0.7,
+    jumpPower: -10
   });
   
   const pipesRef = useRef<Pipe[]>([]);
@@ -44,13 +44,13 @@ export default function FlappyBird() {
   const face2Ref = useRef<HTMLImageElement | null>(null);
   const imagesLoadedRef = useRef(false);
   const lastFrameTime = useRef(0);
-  const gradientsRef = useRef<{ sky?: CanvasGradient }>({});
+  const gradientsRef = useRef<{ sky?: CanvasGradient; ground?: CanvasGradient }>({});
   
   const CANVAS_WIDTH = 500;
   const CANVAS_HEIGHT = 700;
-  const BIRD_SIZE = 90;
-  const PIPE_WIDTH = 100;
-  const PIPE_GAP = 180;
+  const BIRD_SIZE = 100;
+  const PIPE_WIDTH = 80;
+  const PIPE_GAP = 200;
   const PIPE_SPEED = 3;
   
   const jump = useCallback(() => {
@@ -59,9 +59,9 @@ export default function FlappyBird() {
       return;
     }
     if (gameState === 'idle') {
-      setGameState('playing');
       birdRef.current.velocity = birdRef.current.jumpPower;
       flapAnimationRef.current = 25;
+      setGameState('playing');
     } else if (gameState === 'playing') {
       birdRef.current.velocity = birdRef.current.jumpPower;
       flapAnimationRef.current = 25;
@@ -164,21 +164,23 @@ export default function FlappyBird() {
     const canvas = canvasRef.current;
     if (!canvas) return;
     
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) return;
     
-    // Frame rate limiting for smoother performance
+    // More consistent frame timing
     if (currentTime) {
       const deltaTime = currentTime - lastFrameTime.current;
-      if (deltaTime < 16) { // Skip frame if running faster than 60fps
+      if (deltaTime < 16.67) { // Exact 60fps timing
         requestRef.current = requestAnimationFrame(gameLoop);
         return;
       }
       lastFrameTime.current = currentTime;
     }
     
-    // Set canvas properties for better mobile performance
+    // Disable antialiasing for better performance
     ctx.imageSmoothingEnabled = false;
+    (ctx as any).webkitImageSmoothingEnabled = false;
+    (ctx as any).mozImageSmoothingEnabled = false;
     
     ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     
@@ -204,22 +206,18 @@ export default function FlappyBird() {
       }
     }
     
-    // Update and draw clouds
+    // Update and draw clouds - simplified for performance
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
     cloudsRef.current.forEach(cloud => {
       cloud.x -= cloud.speed;
-      if (cloud.x + cloud.width < 0) {
-        cloud.x = CANVAS_WIDTH;
+      if (cloud.x + cloud.width < -20) {
+        cloud.x = CANVAS_WIDTH + 20;
         cloud.y = Math.random() * 150 + 20;
       }
       
-      // Draw cloud
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-      ctx.beginPath();
-      ctx.arc(cloud.x, cloud.y, cloud.width * 0.3, 0, Math.PI * 2);
-      ctx.arc(cloud.x + cloud.width * 0.3, cloud.y, cloud.width * 0.4, 0, Math.PI * 2);
-      ctx.arc(cloud.x + cloud.width * 0.6, cloud.y, cloud.width * 0.3, 0, Math.PI * 2);
-      ctx.closePath();
-      ctx.fill();
+      // Draw cloud as simple rectangles instead of complex arcs
+      ctx.fillRect(cloud.x, cloud.y - 10, cloud.width, 20);
+      ctx.fillRect(cloud.x + 10, cloud.y - 15, cloud.width - 20, 30);
     });
     
     if (gameState === 'playing') {
@@ -236,19 +234,25 @@ export default function FlappyBird() {
         });
       }
       
-      pipesRef.current = pipesRef.current.filter(pipe => pipe.x + PIPE_WIDTH > 0);
+      // Clean up pipes more efficiently
+      const activePipes: Pipe[] = [];
       pipesRef.current.forEach(pipe => {
         pipe.x -= PIPE_SPEED;
         
-        if (!pipe.passed && pipe.x + PIPE_WIDTH < 50) {
-          pipe.passed = true;
-          setScore(prev => {
-            const newScore = prev + 1;
-            setHighScore(current => Math.max(current, newScore));
-            return newScore;
-          });
+        // Only keep pipes that are still visible
+        if (pipe.x + PIPE_WIDTH > -50) {
+          activePipes.push(pipe);
+          
+          if (!pipe.passed && pipe.x + PIPE_WIDTH < 50) {
+            pipe.passed = true;
+            // Batch state updates to reduce re-renders
+            requestAnimationFrame(() => {
+              setScore(prev => prev + 1);
+            });
+          }
         }
       });
+      pipesRef.current = activePipes;
       
       if (checkCollision(birdRef.current.y, pipesRef.current)) {
         setGameState('gameOver');
@@ -300,10 +304,16 @@ export default function FlappyBird() {
     
     // Draw ground
     const groundHeight = 20;
-    const groundGradient = ctx.createLinearGradient(0, CANVAS_HEIGHT - groundHeight, 0, CANVAS_HEIGHT);
-    groundGradient.addColorStop(0, '#8B7355');
-    groundGradient.addColorStop(1, '#654321');
-    ctx.fillStyle = groundGradient;
+    
+    // Cache ground gradient
+    if (!gradientsRef.current.ground) {
+      const groundGradient = ctx.createLinearGradient(0, CANVAS_HEIGHT - groundHeight, 0, CANVAS_HEIGHT);
+      groundGradient.addColorStop(0, '#8B7355');
+      groundGradient.addColorStop(1, '#654321');
+      gradientsRef.current.ground = groundGradient;
+    }
+    
+    ctx.fillStyle = gradientsRef.current.ground;
     ctx.fillRect(0, CANVAS_HEIGHT - groundHeight, CANVAS_WIDTH, groundHeight);
     
     // Ground grass
@@ -484,10 +494,11 @@ export default function FlappyBird() {
   }, []);
   
   useEffect(() => {
-    if (highScore > 0) {
-      localStorage.setItem('flappyBirdHighScore', highScore.toString());
+    if (score > highScore) {
+      setHighScore(score);
+      localStorage.setItem('flappyBirdHighScore', score.toString());
     }
-  }, [highScore]);
+  }, [score, highScore]);
   
   return (
     <div className="flex flex-col items-center gap-4 p-4">
