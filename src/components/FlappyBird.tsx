@@ -518,15 +518,16 @@ export default function FlappyBird() {
   }, [score, highScore]);
   
   return (
-    <div className="flex flex-col items-center gap-4 p-4">
-      <div className="relative">
+    <div className="flex flex-col items-center gap-4 p-4 overflow-hidden">
+      <div className="relative" style={{ touchAction: 'none' }}>
         <canvas
           ref={canvasRef}
           width={CANVAS_WIDTH}
           height={CANVAS_HEIGHT}
-          className="border-4 border-gray-800 shadow-xl cursor-pointer touch-none"
+          className="border-4 border-gray-800 shadow-xl cursor-pointer touch-none select-none"
           onPointerDown={(e) => {
             e.preventDefault();
+            e.stopPropagation();
             jump();
           }}
           style={{
@@ -534,7 +535,13 @@ export default function FlappyBird() {
             height: 'auto',
             imageRendering: 'pixelated',
             borderRadius: '0',
-            borderStyle: 'solid'
+            borderStyle: 'solid',
+            WebkitTapHighlightColor: 'transparent',
+            WebkitTouchCallout: 'none',
+            WebkitUserSelect: 'none',
+            userSelect: 'none',
+            transform: 'translateZ(0)',
+            backfaceVisibility: 'hidden'
           }}
         />
         
