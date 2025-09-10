@@ -40,6 +40,12 @@ export default function FlappyBird() {
   const flapAnimationRef = useRef(0);
   const cloudsRef = useRef<Cloud[]>([]);
   
+  // Store frequently accessed state values in refs to avoid re-creating gameLoop
+  const gameStateRef = useRef(gameState);
+  const scoreRef = useRef(score);
+  const leaderboardRef = useRef(leaderboard);
+  const showNameInputRef = useRef(showNameInput);
+  
   const face1Ref = useRef<HTMLImageElement | null>(null);
   const face2Ref = useRef<HTMLImageElement | null>(null);
   const imagesLoadedRef = useRef(false);
@@ -53,6 +59,23 @@ export default function FlappyBird() {
   const PIPE_WIDTH = 80;
   const PIPE_GAP = 200;
   const PIPE_SPEED = 3;
+  
+  // Keep refs in sync with state
+  useEffect(() => {
+    gameStateRef.current = gameState;
+  }, [gameState]);
+  
+  useEffect(() => {
+    scoreRef.current = score;
+  }, [score]);
+  
+  useEffect(() => {
+    leaderboardRef.current = leaderboard;
+  }, [leaderboard]);
+  
+  useEffect(() => {
+    showNameInputRef.current = showNameInput;
+  }, [showNameInput]);
   
   const jump = useCallback(() => {
     if (showNameInput) {
@@ -142,7 +165,11 @@ export default function FlappyBird() {
   
   const checkIfHighScore = useCallback(() => {
     if (score === 0) return false;
+    // If no Supabase connection, always show high score input
+    if (!supabase) return true;
+    // If leaderboard has less than 10 entries, it's a high score
     if (leaderboard.length < 10) return true;
+    // Check if score beats the 10th place
     return score > leaderboard[9].score;
   }, [score, leaderboard]);
   
@@ -233,7 +260,7 @@ export default function FlappyBird() {
       ctx.fillRect(cloud.x + 10, cloud.y - 15, cloud.width - 20, 30);
     });
     
-    if (gameState === 'playing') {
+    if (gameStateRef.current === 'playing') {
       birdRef.current.velocity += birdRef.current.gravity;
       birdRef.current.y += birdRef.current.velocity;
       
@@ -361,9 +388,9 @@ export default function FlappyBird() {
     
     ctx.fillStyle = '#000';
     ctx.font = 'bold 24px Arial';
-    ctx.fillText(`Score: ${score}`, 10, 30);
+    ctx.fillText(`Score: ${scoreRef.current}`, 10, 30);
     
-    if (gameState === 'idle') {
+    if (gameStateRef.current === 'idle') {
       ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
       ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
       ctx.fillStyle = '#FFF';
@@ -375,7 +402,7 @@ export default function FlappyBird() {
       ctx.textAlign = 'left';
     }
     
-    if (gameState === 'gameOver') {
+    if (gameStateRef.current === 'gameOver') {
       ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
       ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
       
@@ -387,7 +414,7 @@ export default function FlappyBird() {
       
       ctx.font = 'bold 16px monospace';
       ctx.fillStyle = '#FFD700';
-      ctx.fillText(`SCORE: ${score}`, CANVAS_WIDTH/2, 85);
+      ctx.fillText(`SCORE: ${scoreRef.current}`, CANVAS_WIDTH/2, 85);
       
       // Draw 8-bit style leaderboard box
       const boxX = 110;
@@ -413,8 +440,8 @@ export default function FlappyBird() {
       const startY = boxY + 50;
       const lineHeight = 18;
       
-      if (leaderboard.length > 0) {
-        leaderboard.slice(0, 10).forEach((entry, index) => {
+      if (leaderboardRef.current.length > 0) {
+        leaderboardRef.current.slice(0, 10).forEach((entry, index) => {
           const y = startY + (index * lineHeight);
           
           // Rank
@@ -446,7 +473,7 @@ export default function FlappyBird() {
       ctx.font = 'bold 14px monospace';
       ctx.fillStyle = '#0F0';
       ctx.textAlign = 'center';
-      if (!showNameInput) {
+      if (!showNameInputRef.current) {
         ctx.fillText('TAP TO PLAY AGAIN', CANVAS_WIDTH/2, CANVAS_HEIGHT - 50);
       }
       
@@ -454,7 +481,7 @@ export default function FlappyBird() {
     }
     
     requestRef.current = requestAnimationFrame(gameLoop);
-  }, [gameState, score, leaderboard, showNameInput]);
+  }, []);
   
   useEffect(() => {
     requestRef.current = requestAnimationFrame(gameLoop);
@@ -468,11 +495,40 @@ export default function FlappyBird() {
   
   useEffect(() => {
     if (gameState === 'gameOver' && score > 0 && !scoreSubmitted) {
-      if (checkIfHighScore()) {
-        setShowNameInput(true);
-      }
+      // Fetch fresh leaderboard data before checking high score
+      const checkAndShowHighScore = async () => {
+        // If no Supabase, just check immediately
+        if (!supabase) {
+          setShowNameInput(true);
+          return;
+        }
+        
+        try {
+          const { data, error } = await supabase
+            .from('flappy_bird_leaderboard')
+            .select('*')
+            .order('score', { ascending: false })
+            .limit(10);
+          
+          if (!error && data) {
+            // Check against fresh data directly
+            const qualifiesForLeaderboard = 
+              data.length < 10 || score > (data[9]?.score || 0);
+            
+            if (qualifiesForLeaderboard) {
+              setShowNameInput(true);
+            }
+            // Also update the leaderboard state for display
+            setLeaderboard(data);
+          }
+        } catch {
+          // On error, still allow high score entry
+          setShowNameInput(true);
+        }
+      };
+      checkAndShowHighScore();
     }
-  }, [gameState, score, checkIfHighScore, scoreSubmitted]);
+  }, [gameState, score, scoreSubmitted]);
   
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -557,6 +613,7 @@ export default function FlappyBird() {
           ref={canvasRef}
           width={CANVAS_WIDTH}
           height={CANVAS_HEIGHT}
+          onClick={jump}
           className="border-4 border-gray-800 shadow-xl cursor-pointer touch-none select-none"
           style={{
             maxWidth: '100%',
