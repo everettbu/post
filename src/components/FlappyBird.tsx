@@ -179,8 +179,6 @@ export default function FlappyBird() {
     
     // Disable antialiasing for better performance
     ctx.imageSmoothingEnabled = false;
-    (ctx as any).webkitImageSmoothingEnabled = false;
-    (ctx as any).mozImageSmoothingEnabled = false;
     
     ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     
