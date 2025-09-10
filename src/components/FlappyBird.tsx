@@ -279,44 +279,47 @@ export default function FlappyBird() {
     // Draw pipes with simplified rendering for better performance
     pipesRef.current.forEach(pipe => {
       const capHeight = 30;
+      // Round to prevent sub-pixel shaking
+      const pipeX = Math.floor(pipe.x);
+      const topHeight = Math.floor(pipe.topHeight);
       
       // Top pipe - simplified
       ctx.fillStyle = '#4caf50';
-      ctx.fillRect(pipe.x, 0, PIPE_WIDTH, pipe.topHeight);
+      ctx.fillRect(pipeX, 0, PIPE_WIDTH, topHeight);
       
       // Add simple shading
       ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
-      ctx.fillRect(pipe.x + 5, 0, 10, pipe.topHeight - capHeight);
+      ctx.fillRect(pipeX + 5, 0, 10, topHeight - capHeight);
       ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
-      ctx.fillRect(pipe.x + PIPE_WIDTH - 15, 0, 10, pipe.topHeight - capHeight);
+      ctx.fillRect(pipeX + PIPE_WIDTH - 15, 0, 10, topHeight - capHeight);
       
       // Pipe cap (top)
       ctx.fillStyle = '#3e8e41';
-      ctx.fillRect(pipe.x - 5, pipe.topHeight - capHeight, PIPE_WIDTH + 10, capHeight);
+      ctx.fillRect(pipeX - 5, topHeight - capHeight, PIPE_WIDTH + 10, capHeight);
       
       // Bottom pipe
-      const bottomY = pipe.topHeight + PIPE_GAP;
+      const bottomY = Math.floor(topHeight + PIPE_GAP);
       const bottomHeight = CANVAS_HEIGHT - bottomY;
       
       // Bottom pipe - simplified
       ctx.fillStyle = '#4caf50';
-      ctx.fillRect(pipe.x, bottomY + capHeight, PIPE_WIDTH, bottomHeight - capHeight);
+      ctx.fillRect(pipeX, bottomY + capHeight, PIPE_WIDTH, bottomHeight - capHeight);
       
       // Add simple shading
       ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
-      ctx.fillRect(pipe.x + 5, bottomY + capHeight, 10, bottomHeight - capHeight);
+      ctx.fillRect(pipeX + 5, bottomY + capHeight, 10, bottomHeight - capHeight);
       ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
-      ctx.fillRect(pipe.x + PIPE_WIDTH - 15, bottomY + capHeight, 10, bottomHeight - capHeight);
+      ctx.fillRect(pipeX + PIPE_WIDTH - 15, bottomY + capHeight, 10, bottomHeight - capHeight);
       
       // Pipe cap (bottom)
       ctx.fillStyle = '#3e8e41';
-      ctx.fillRect(pipe.x - 5, bottomY, PIPE_WIDTH + 10, capHeight);
+      ctx.fillRect(pipeX - 5, bottomY, PIPE_WIDTH + 10, capHeight);
       
       // Simple borders
       ctx.strokeStyle = '#2e7d32';
       ctx.lineWidth = 2;
-      ctx.strokeRect(pipe.x, 0, PIPE_WIDTH, pipe.topHeight);
-      ctx.strokeRect(pipe.x, bottomY, PIPE_WIDTH, bottomHeight);
+      ctx.strokeRect(pipeX, 0, PIPE_WIDTH, topHeight);
+      ctx.strokeRect(pipeX, bottomY, PIPE_WIDTH, bottomHeight);
     });
     
     // Draw ground
