@@ -480,6 +480,33 @@ export default function FlappyBird() {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [jump]);
   
+  // Add passive touch event listeners for better mobile performance
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const handleTouch = (e: TouchEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      jump();
+    };
+    
+    const preventMove = (e: TouchEvent) => {
+      e.preventDefault();
+    };
+    
+    // Use passive: false to prevent default behavior and eliminate bounce
+    canvas.addEventListener('touchstart', handleTouch, { passive: false });
+    canvas.addEventListener('touchmove', preventMove, { passive: false });
+    canvas.addEventListener('touchend', preventMove, { passive: false });
+    
+    return () => {
+      canvas.removeEventListener('touchstart', handleTouch);
+      canvas.removeEventListener('touchmove', preventMove);
+      canvas.removeEventListener('touchend', preventMove);
+    };
+  }, [jump]);
+  
   useEffect(() => {
     const face1 = new window.Image();
     const face2 = new window.Image();
@@ -525,11 +552,6 @@ export default function FlappyBird() {
           width={CANVAS_WIDTH}
           height={CANVAS_HEIGHT}
           className="border-4 border-gray-800 shadow-xl cursor-pointer touch-none select-none"
-          onPointerDown={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            jump();
-          }}
           style={{
             maxWidth: '100%',
             height: 'auto',
@@ -540,8 +562,11 @@ export default function FlappyBird() {
             WebkitTouchCallout: 'none',
             WebkitUserSelect: 'none',
             userSelect: 'none',
-            transform: 'translateZ(0)',
-            backfaceVisibility: 'hidden'
+            transform: 'translate3d(0, 0, 0)',
+            backfaceVisibility: 'hidden',
+            perspective: 1000,
+            willChange: 'transform',
+            contain: 'layout style paint'
           }}
         />
         
