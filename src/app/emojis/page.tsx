@@ -21,20 +21,59 @@ export default function EmojisPage() {
 
   const handleCopyEmoji = async (emoji: string, index: number) => {
     try {
+      // Fetch the image
       const response = await fetch(`/emojis/${emoji}`);
       const blob = await response.blob();
       
-      await navigator.clipboard.write([
-        new ClipboardItem({
-          [blob.type]: blob
-        })
-      ]);
+      // Convert to PNG blob if needed
+      const pngBlob = blob.type === 'image/png' ? blob : await convertToPng(blob);
       
-      setCopiedIndex(index);
-      setTimeout(() => setCopiedIndex(null), 2000);
+      // Try to copy as image
+      if (navigator.clipboard && window.ClipboardItem) {
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            'image/png': pngBlob
+          })
+        ]);
+        
+        setCopiedIndex(index);
+        setTimeout(() => setCopiedIndex(null), 2000);
+      } else {
+        // Fallback: Copy image URL
+        await navigator.clipboard.writeText(window.location.origin + `/emojis/${emoji}`);
+        setCopiedIndex(index);
+        setTimeout(() => setCopiedIndex(null), 2000);
+      }
     } catch (err) {
       console.error('Failed to copy emoji:', err);
+      // Fallback: Copy image URL
+      try {
+        await navigator.clipboard.writeText(window.location.origin + `/emojis/${emoji}`);
+        setCopiedIndex(index);
+        setTimeout(() => setCopiedIndex(null), 2000);
+      } catch (fallbackErr) {
+        console.error('Fallback copy also failed:', fallbackErr);
+      }
     }
+  };
+
+  const convertToPng = async (blob: Blob): Promise<Blob> => {
+    return new Promise((resolve) => {
+      const img = document.createElement('img');
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      img.onload = () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx?.drawImage(img, 0, 0);
+        canvas.toBlob((pngBlob) => {
+          resolve(pngBlob || blob);
+        }, 'image/png');
+      };
+      
+      img.src = URL.createObjectURL(blob);
+    });
   };
 
   return (
