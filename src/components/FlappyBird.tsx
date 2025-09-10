@@ -499,8 +499,7 @@ export default function FlappyBird() {
           width={CANVAS_WIDTH}
           height={CANVAS_HEIGHT}
           className="border-4 border-gray-800 shadow-xl cursor-pointer touch-none"
-          onClick={jump}
-          onTouchStart={(e) => {
+          onPointerDown={(e) => {
             e.preventDefault();
             jump();
           }}
