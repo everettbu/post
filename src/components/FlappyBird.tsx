@@ -579,16 +579,22 @@ export default function FlappyBird() {
     if (!canvas) return;
     
     const handleTouch = (e: TouchEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      jump();
+      // Only prevent default on the canvas itself to allow page scrolling
+      if (e.target === canvas) {
+        e.preventDefault();
+        e.stopPropagation();
+        jump();
+      }
     };
     
     const preventMove = (e: TouchEvent) => {
-      e.preventDefault();
+      // Only prevent scrolling on the canvas, not the whole page
+      if (e.target === canvas) {
+        e.preventDefault();
+      }
     };
     
-    // Use passive: false to prevent default behavior and eliminate bounce
+    // Use passive: false to prevent default behavior on canvas only
     canvas.addEventListener('touchstart', handleTouch, { passive: false });
     canvas.addEventListener('touchmove', preventMove, { passive: false });
     canvas.addEventListener('touchend', preventMove, { passive: false });
@@ -638,8 +644,8 @@ export default function FlappyBird() {
   }, [score, highScore]);
   
   return (
-    <div className="flex flex-col items-center gap-4 p-4 overflow-hidden">
-      <div className="relative" style={{ touchAction: 'none' }}>
+    <div className="flex flex-col items-center gap-4 p-4">
+      <div className="relative">
         <canvas
           ref={canvasRef}
           width={CANVAS_WIDTH}
