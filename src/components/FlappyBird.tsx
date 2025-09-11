@@ -106,6 +106,7 @@ export default function FlappyBird() {
     birdRef.current.velocity = 0;
     pipesRef.current = [];
     frameCountRef.current = 0;
+    scoreRef.current = 0;  // Reset the score ref
     setScore(0);
     setGameState('idle');
     setShowNameInput(false);
@@ -283,16 +284,16 @@ export default function FlappyBird() {
           
           if (!pipe.passed && pipe.x + PIPE_WIDTH < 50) {
             pipe.passed = true;
-            // Defer score update to next idle callback
-            setTimeout(() => {
-              setScore(prev => prev + 1);
-            }, 0);
+            // Update score ref only - no state update during gameplay
+            scoreRef.current += 1;
           }
         }
       });
       pipesRef.current = activePipes;
       
       if (checkCollision(birdRef.current.y, pipesRef.current)) {
+        // Sync the score from ref to state when game ends
+        setScore(scoreRef.current);
         setGameState('gameOver');
       }
     }
