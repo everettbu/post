@@ -46,3 +46,26 @@
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes grow-fade {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.3);
+  }
+  40% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  60% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+}
+
+.animate-grow-fade {
+  animation: grow-fade 10s ease-in-out;
+}
