@@ -27,6 +27,7 @@ export default function FlappyBird() {
   const [playerName, setPlayerName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
+  const [checkingHighScore, setCheckingHighScore] = useState(false);
   
   const birdRef = useRef({
     y: 250,
@@ -52,6 +53,7 @@ export default function FlappyBird() {
   const lastFrameTime = useRef(0);
   const gradientsRef = useRef<{ sky?: CanvasGradient; ground?: CanvasGradient }>({});
   const deltaTimeRef = useRef(16.67);
+  const pipePositionsRef = useRef<Map<Pipe, number>>(new Map());
   
   const CANVAS_WIDTH = 500;
   const CANVAS_HEIGHT = 700;
@@ -78,8 +80,8 @@ export default function FlappyBird() {
   }, [showNameInput]);
   
   const jump = useCallback(() => {
-    if (showNameInput) {
-      // Don't jump if name input is showing
+    if (showNameInput || checkingHighScore) {
+      // Don't jump if name input is showing or we're checking for high score
       return;
     }
     
@@ -96,15 +98,16 @@ export default function FlappyBird() {
       flapAnimationRef.current = 25;
       // Only state change is starting the game
       setGameState('playing');
-    } else if (gameState === 'gameOver') {
+    } else if (gameState === 'gameOver' && !scoreSubmitted) {
       resetGame();
     }
-  }, [gameState, showNameInput]);
+  }, [gameState, showNameInput, checkingHighScore, scoreSubmitted]);
   
   const resetGame = () => {
     birdRef.current.y = 250;
     birdRef.current.velocity = 0;
     pipesRef.current = [];
+    pipePositionsRef.current.clear();
     frameCountRef.current = 0;
     scoreRef.current = 0;  // Reset the score ref
     setScore(0);
@@ -112,6 +115,7 @@ export default function FlappyBird() {
     setShowNameInput(false);
     setPlayerName('');
     setScoreSubmitted(false);
+    setCheckingHighScore(false);
   };
   
   const fetchLeaderboard = async () => {
@@ -139,6 +143,7 @@ export default function FlappyBird() {
       setShowNameInput(false);
       setPlayerName('');
       setScoreSubmitted(true);
+      setCheckingHighScore(false);
       return;
     }
     
@@ -154,11 +159,13 @@ export default function FlappyBird() {
       setShowNameInput(false);
       setPlayerName('');
       setScoreSubmitted(true);
+      setCheckingHighScore(false);
     } catch {
       // Silently handle error
       setShowNameInput(false);
       setPlayerName('');
       setScoreSubmitted(true);
+      setCheckingHighScore(false);
     } finally {
       setIsSubmitting(false);
     }
@@ -195,19 +202,29 @@ export default function FlappyBird() {
     if (!ctx) return;
     
     // More consistent frame timing with delta tracking
-    if (currentTime) {
-      if (lastFrameTime.current === 0) {
-        lastFrameTime.current = currentTime;
-        deltaTimeRef.current = 16.67;
-      } else {
-        const deltaTime = currentTime - lastFrameTime.current;
-        if (deltaTime < 15) { // Skip if too fast
-          requestRef.current = requestAnimationFrame(gameLoop);
-          return;
-        }
-        deltaTimeRef.current = Math.min(deltaTime, 33); // Cap at 2 frames
-        lastFrameTime.current = currentTime;
+    if (!currentTime) {
+      currentTime = performance.now();
+    }
+    
+    if (lastFrameTime.current === 0) {
+      lastFrameTime.current = currentTime;
+      deltaTimeRef.current = 16.67;
+    } else {
+      const deltaTime = currentTime - lastFrameTime.current;
+      
+      // Skip frame if less than 8ms (>120fps) to prevent micro-stutters
+      if (deltaTime < 8) {
+        requestRef.current = requestAnimationFrame(gameLoop);
+        return;
       }
+      
+      // Smooth out delta time with rolling average for more consistent motion
+      const smoothingFactor = 0.8;
+      deltaTimeRef.current = deltaTimeRef.current * smoothingFactor + deltaTime * (1 - smoothingFactor);
+      
+      // Cap at 50ms (20 FPS minimum) to prevent huge jumps
+      deltaTimeRef.current = Math.min(deltaTimeRef.current, 50);
+      lastFrameTime.current = currentTime;
     }
     
     // Disable antialiasing for better performance and consistent pixel rendering
@@ -259,24 +276,36 @@ export default function FlappyBird() {
       frameCountRef.current++;
       if (frameCountRef.current % 125 === 0) {
         const topHeight = Math.random() * (CANVAS_HEIGHT - PIPE_GAP - 100) + 50;
-        pipesRef.current.push({
+        const newPipe = {
           x: CANVAS_WIDTH,
           topHeight,
           passed: false
-        });
+        };
+        pipesRef.current.push(newPipe);
+        pipePositionsRef.current.set(newPipe, CANVAS_WIDTH);
       }
       
-      // Move pipes with consistent speed using delta time
-      const targetFPS = 60;
-      const frameDelta = deltaTimeRef.current / (1000 / targetFPS);
-      const adjustedSpeed = PIPE_SPEED * frameDelta;
+      // Move pipes with time-based animation for consistency
+      const deltaSeconds = deltaTimeRef.current / 1000;
+      const pixelsPerSecond = PIPE_SPEED * 60; // Convert from per-frame to per-second
+      const movement = pixelsPerSecond * deltaSeconds;
       
       // Clean up pipes more efficiently
       const activePipes: Pipe[] = [];
       pipesRef.current.forEach(pipe => {
-        // Use smoother movement calculation and round to full pixels to prevent shaking
-        const newX = pipe.x - adjustedSpeed;
-        pipe.x = Math.floor(newX); // Round to full pixel for stable rendering on mobile
+        // Store exact position in map, render rounded position
+        let exactX = pipePositionsRef.current.get(pipe);
+        if (exactX === undefined) {
+          exactX = pipe.x;
+          pipePositionsRef.current.set(pipe, exactX);
+        }
+        
+        // Update exact position
+        exactX -= movement;
+        pipePositionsRef.current.set(pipe, exactX);
+        
+        // Store rounded position for rendering
+        pipe.x = Math.floor(exactX);
         
         // Only keep pipes that are still visible
         if (pipe.x + PIPE_WIDTH > -50) {
@@ -287,6 +316,9 @@ export default function FlappyBird() {
             // Update score ref only - no state update during gameplay
             scoreRef.current += 1;
           }
+        } else {
+          // Clean up position tracking for removed pipes
+          pipePositionsRef.current.delete(pipe);
         }
       });
       pipesRef.current = activePipes;
@@ -486,12 +518,16 @@ export default function FlappyBird() {
   }, [gameLoop]);
   
   useEffect(() => {
-    if (gameState === 'gameOver' && score > 0 && !scoreSubmitted) {
+    if (gameState === 'gameOver' && score > 0 && !scoreSubmitted && !checkingHighScore) {
+      // Set checking flag immediately to prevent race conditions
+      setCheckingHighScore(true);
+      
       // Fetch fresh leaderboard data before checking high score
       const checkAndShowHighScore = async () => {
         // If no Supabase, just check immediately
         if (!supabase) {
           setShowNameInput(true);
+          setCheckingHighScore(false);
           return;
         }
         
@@ -509,6 +545,9 @@ export default function FlappyBird() {
             
             if (qualifiesForLeaderboard) {
               setShowNameInput(true);
+            } else {
+              // Not a high score, allow immediate restart
+              setCheckingHighScore(false);
             }
             // Also update the leaderboard state for display
             setLeaderboard(data);
@@ -520,7 +559,7 @@ export default function FlappyBird() {
       };
       checkAndShowHighScore();
     }
-  }, [gameState, score, scoreSubmitted]);
+  }, [gameState, score, scoreSubmitted, checkingHighScore]);
   
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -617,16 +656,17 @@ export default function FlappyBird() {
             WebkitTouchCallout: 'none',
             WebkitUserSelect: 'none',
             userSelect: 'none',
-            transform: 'translateZ(0)',
-            WebkitTransform: 'translateZ(0)',
+            transform: 'translate3d(0, 0, 0)',
+            WebkitTransform: 'translate3d(0, 0, 0)',
             backfaceVisibility: 'hidden',
             WebkitBackfaceVisibility: 'hidden',
             perspective: 1000,
             WebkitPerspective: 1000,
-            willChange: 'transform',
+            willChange: 'auto',
             contain: 'layout style paint',
             WebkitFontSmoothing: 'antialiased',
-            MozOsxFontSmoothing: 'grayscale'
+            MozOsxFontSmoothing: 'grayscale',
+            touchAction: 'none'
           }}
         />
         
