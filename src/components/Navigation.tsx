@@ -17,7 +17,7 @@ export default function Navigation() {
           className="hover:scale-110 transition-transform"
           onClick={() => {
             setIsTapped(true);
-            setTimeout(() => setIsTapped(false), 300);
+            setTimeout(() => setIsTapped(false), 500);
           }}
         >
           <Image
