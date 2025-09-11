@@ -2,11 +2,17 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Navigation() {
   const [isHovered, setIsHovered] = useState(false);
   const [isTapped, setIsTapped] = useState(false);
+
+  // Preload joe-2 image for smoother hover transition
+  useEffect(() => {
+    const img = new window.Image();
+    img.src = '/game/joe-2.png';
+  }, []);
 
   return (
     <nav className="fixed top-0 left-0 right-0 w-full py-6 px-4 sm:px-8 z-50 bg-background">
@@ -62,6 +68,8 @@ export default function Navigation() {
             width={50}
             height={50}
             className="cursor-pointer"
+            priority
+            unoptimized
           />
         </Link>
         

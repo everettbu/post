@@ -91,9 +91,9 @@ export default function EmojisPage() {
   };
 
   return (
-    <div className="fixed inset-0 overflow-hidden pt-32 pb-8 px-8 bg-gradient-to-br from-purple-900/20 via-background to-blue-900/20">
+    <div className="min-h-screen pt-32 pb-8 px-4 sm:px-8 bg-gradient-to-br from-purple-900/20 via-background to-blue-900/20">
       
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-8 overflow-y-auto max-h-[calc(100vh-280px)] px-4 pb-4 pt-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-8">
         {emojis.map((emoji, index) => (
           <div
             key={emoji}

@@ -442,10 +442,10 @@ export default function FlappyBird() {
       ctx.fillText(`SCORE: ${scoreRef.current}`, CANVAS_WIDTH/2, 85);
       
       // Draw 8-bit style leaderboard box
-      const boxX = 110;
-      const boxY = 110;
-      const boxWidth = 280;
-      const boxHeight = 250;
+      const boxX = 60;
+      const boxY = 120;
+      const boxWidth = 380;
+      const boxHeight = 350;
       
       // Outer border
       ctx.fillStyle = '#FFF';
@@ -456,14 +456,14 @@ export default function FlappyBird() {
       ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
       
       // Title
-      ctx.font = 'bold 14px monospace';
+      ctx.font = 'bold 20px monospace';
       ctx.fillStyle = '#FFD700';
-      ctx.fillText('-- HIGH SCORES --', CANVAS_WIDTH/2, boxY + 25);
+      ctx.fillText('-- HIGH SCORES --', CANVAS_WIDTH/2, boxY + 35);
       
       // Leaderboard entries
-      ctx.font = '12px monospace';
-      const startY = boxY + 50;
-      const lineHeight = 18;
+      ctx.font = '16px monospace';
+      const startY = boxY + 70;
+      const lineHeight = 26;
       
       if (leaderboardRef.current.length > 0) {
         leaderboardRef.current.slice(0, 10).forEach((entry, index) => {
@@ -476,26 +476,26 @@ export default function FlappyBird() {
           else ctx.fillStyle = '#FFF';
           
           ctx.textAlign = 'left';
-          ctx.fillText(`${(index + 1).toString().padStart(2, '0')}.`, boxX + 15, y);
+          ctx.fillText(`${(index + 1).toString().padStart(2, '0')}.`, boxX + 25, y);
           
           // Name
           ctx.fillStyle = '#FFF';
-          const truncatedName = entry.name.length > 12 ? entry.name.substring(0, 12) + '..' : entry.name;
-          ctx.fillText(truncatedName, boxX + 45, y);
+          const truncatedName = entry.name.length > 20 ? entry.name.substring(0, 20) + '..' : entry.name;
+          ctx.fillText(truncatedName, boxX + 65, y);
           
           // Score
           ctx.fillStyle = '#0FF';
           ctx.textAlign = 'right';
-          ctx.fillText(entry.score.toString().padStart(4, '0'), boxX + boxWidth - 15, y);
+          ctx.fillText(entry.score.toString().padStart(4, '0'), boxX + boxWidth - 25, y);
         });
       } else {
         ctx.fillStyle = '#888';
         ctx.textAlign = 'center';
-        ctx.fillText('NO SCORES YET!', CANVAS_WIDTH/2, startY + 20);
+        ctx.fillText('NO SCORES YET!', CANVAS_WIDTH/2, startY + 30);
       }
       
       // Play again prompt
-      ctx.font = 'bold 14px monospace';
+      ctx.font = 'bold 18px monospace';
       ctx.fillStyle = '#0F0';
       ctx.textAlign = 'center';
       if (!showNameInputRef.current) {
