@@ -98,10 +98,11 @@ export default function FlappyBird() {
       flapAnimationRef.current = 25;
       // Only state change is starting the game
       setGameState('playing');
-    } else if (gameState === 'gameOver' && !scoreSubmitted) {
+    } else if (gameState === 'gameOver') {
+      // Allow reset regardless of scoreSubmitted state
       resetGame();
     }
-  }, [gameState, showNameInput, checkingHighScore, scoreSubmitted]);
+  }, [gameState, showNameInput, checkingHighScore]);
   
   const resetGame = () => {
     birdRef.current.y = 250;
