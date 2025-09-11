@@ -9,7 +9,7 @@ export default function Navigation() {
   const [isTapped, setIsTapped] = useState(false);
 
   return (
-    <nav className="w-full py-6 px-4 sm:px-8">
+    <nav className="fixed top-0 left-0 right-0 w-full py-6 px-4 sm:px-8 z-50 bg-background">
       {/* Mobile layout - all 4 items evenly spaced */}
       <div className="flex sm:hidden items-center justify-around">
         <Link 

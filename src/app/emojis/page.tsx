@@ -91,36 +91,40 @@ export default function EmojisPage() {
   };
 
   return (
-    <div className="min-h-screen p-8">
-      <h1 className="text-2xl font-bold mb-8">Click any emoji to copy it to your clipboard</h1>
+    <div className="fixed inset-0 overflow-hidden pt-32 pb-8 px-8 bg-gradient-to-br from-purple-900/20 via-background to-blue-900/20">
       
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-8 overflow-y-auto max-h-[calc(100vh-280px)] px-4 pb-4 pt-4">
         {emojis.map((emoji, index) => (
           <div
             key={emoji}
-            className="relative group cursor-pointer"
+            className="relative group cursor-pointer h-fit transform transition-all duration-300 hover:scale-105 hover:rotate-2"
             onClick={() => handleCopyEmoji(emoji, index)}
           >
-            <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 hover:bg-gray-200 transition-colors">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-600/50 to-blue-600/50 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="relative aspect-square rounded-2xl overflow-hidden bg-white/5 backdrop-blur-sm border border-white/10 group-hover:border-white/30 transition-all duration-300 shadow-xl">
               <Image
                 src={`/emojis/${emoji}`}
                 alt={`Emoji ${index + 1}`}
                 fill
-                className="object-contain p-2"
+                className="object-contain p-4 drop-shadow-2xl"
               />
+              
+              <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </div>
             
             {copiedIndex !== index && (
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                <span className="bg-black bg-opacity-75 text-white px-2 py-1 rounded text-sm">
-                  Click to copy
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 sm:group-hover:opacity-100 transition-all duration-300 pointer-events-none">
+                <span className="bg-white/90 backdrop-blur-md text-black px-4 py-2 rounded-full text-sm font-bold shadow-2xl transform group-hover:scale-110 transition-transform">
+                  TAP TO COPY
                 </span>
               </div>
             )}
             
             {copiedIndex === index && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-75 rounded-lg pointer-events-none">
-                <span className="text-white font-semibold">Copied!</span>
+              <div className="absolute inset-0 flex items-center justify-center rounded-2xl pointer-events-none animate-pulse">
+                <div className="bg-gradient-to-br from-green-400 to-blue-400 text-white font-bold text-lg px-6 py-3 rounded-full shadow-2xl">
+                  ✓ COPIED!
+                </div>
               </div>
             )}
           </div>

@@ -579,32 +579,37 @@ export default function FlappyBird() {
     const canvas = canvasRef.current;
     if (!canvas) return;
     
-    const handleTouch = (e: TouchEvent) => {
-      // Only prevent default on the canvas itself to allow page scrolling
-      if (e.target === canvas) {
-        e.preventDefault();
-        e.stopPropagation();
-        jump();
-      }
-    };
+    // Only add touch listeners on actual touch devices
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     
-    const preventMove = (e: TouchEvent) => {
-      // Only prevent scrolling on the canvas, not the whole page
-      if (e.target === canvas) {
-        e.preventDefault();
-      }
-    };
-    
-    // Use passive: false to prevent default behavior on canvas only
-    canvas.addEventListener('touchstart', handleTouch, { passive: false });
-    canvas.addEventListener('touchmove', preventMove, { passive: false });
-    canvas.addEventListener('touchend', preventMove, { passive: false });
-    
-    return () => {
-      canvas.removeEventListener('touchstart', handleTouch);
-      canvas.removeEventListener('touchmove', preventMove);
-      canvas.removeEventListener('touchend', preventMove);
-    };
+    if (isTouchDevice) {
+      const handleTouch = (e: TouchEvent) => {
+        // Only prevent default on the canvas itself to allow page scrolling
+        if (e.target === canvas) {
+          e.preventDefault();
+          e.stopPropagation();
+          jump();
+        }
+      };
+      
+      const preventMove = (e: TouchEvent) => {
+        // Only prevent scrolling on the canvas, not the whole page
+        if (e.target === canvas) {
+          e.preventDefault();
+        }
+      };
+      
+      // Use passive: false to prevent default behavior on canvas only
+      canvas.addEventListener('touchstart', handleTouch, { passive: false });
+      canvas.addEventListener('touchmove', preventMove, { passive: false });
+      canvas.addEventListener('touchend', preventMove, { passive: false });
+      
+      return () => {
+        canvas.removeEventListener('touchstart', handleTouch);
+        canvas.removeEventListener('touchmove', preventMove);
+        canvas.removeEventListener('touchend', preventMove);
+      };
+    }
   }, [jump]);
   
   useEffect(() => {
@@ -645,8 +650,8 @@ export default function FlappyBird() {
   }, [score, highScore]);
   
   return (
-    <div className="flex flex-col items-center gap-4 p-4">
-      <div className="relative">
+    <div className="flex flex-col items-center gap-4 p-2 sm:p-4">
+      <div className="relative w-full sm:w-auto flex justify-center">
         <canvas
           ref={canvasRef}
           width={CANVAS_WIDTH}
@@ -655,7 +660,10 @@ export default function FlappyBird() {
           className="border-4 border-gray-800 shadow-xl cursor-pointer touch-none select-none"
           style={{
             maxWidth: '100%',
+            width: '100%',
             height: 'auto',
+            maxHeight: 'calc(100vh - 100px)',
+            objectFit: 'contain',
             imageRendering: 'pixelated',
             borderRadius: '0',
             borderStyle: 'solid',
