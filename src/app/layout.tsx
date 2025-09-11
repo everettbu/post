@@ -17,13 +17,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'Post App',
-  description: 'Post application with games',
-  icons: {
-    icon: '/game/joe-1.png',
-    shortcut: '/game/joe-1.png',
-    apple: '/game/joe-1.png',
-  },
+  title: 'Joe P',
+  description: 'Enter the world of Joe P (with games)',
 };
 
 export default function RootLayout({
