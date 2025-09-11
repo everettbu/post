@@ -273,9 +273,9 @@ export default function FlappyBird() {
       // Clean up pipes more efficiently
       const activePipes: Pipe[] = [];
       pipesRef.current.forEach(pipe => {
-        // Use smoother movement calculation and round to prevent subpixel shaking
+        // Use smoother movement calculation and round to full pixels to prevent shaking
         const newX = pipe.x - adjustedSpeed;
-        pipe.x = Math.round(newX * 2) / 2; // Round to nearest 0.5 pixel for smoother movement
+        pipe.x = Math.floor(newX); // Round to full pixel for stable rendering on mobile
         
         // Only keep pipes that are still visible
         if (pipe.x + PIPE_WIDTH > -50) {
@@ -301,8 +301,8 @@ export default function FlappyBird() {
     pipesRef.current.forEach(pipe => {
       const capHeight = 30;
       // Use the already-rounded pipe.x position
-      const pipeX = Math.round(pipe.x);
-      const topHeight = Math.round(pipe.topHeight);
+      const pipeX = Math.floor(pipe.x);
+      const topHeight = Math.floor(pipe.topHeight);
       
       // Top pipe - simplified
       ctx.fillStyle = '#4caf50';
