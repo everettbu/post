@@ -38,6 +38,7 @@ export default function FlappyBird() {
   
   const pipesRef = useRef<Pipe[]>([]);
   const frameCountRef = useRef(0);
+  const lastPipeSpawnTime = useRef(0);
   const flapAnimationRef = useRef(0);
   const cloudsRef = useRef<Cloud[]>([]);
   
@@ -115,6 +116,7 @@ export default function FlappyBird() {
     pipesRef.current = [];
     pipePositionsRef.current.clear();
     frameCountRef.current = 0;
+    lastPipeSpawnTime.current = 0;
     scoreRef.current = 0;  // Reset the score ref
     setScore(0);
     setGameState('idle');
@@ -276,11 +278,25 @@ export default function FlappyBird() {
     });
     
     if (gameStateRef.current === 'playing') {
-      birdRef.current.velocity += birdRef.current.gravity;
-      birdRef.current.y += birdRef.current.velocity;
+      // Make bird physics frame-rate independent
+      // Target 60 FPS as the baseline
+      const targetFrameTime = 1000 / 60; // ~16.67ms per frame at 60 FPS
+      const timeScale = deltaTimeRef.current / targetFrameTime;
       
-      frameCountRef.current++;
-      if (frameCountRef.current % 125 === 0) {
+      // Apply gravity and velocity scaled to frame time
+      // This maintains the original game feel while being frame-rate independent
+      birdRef.current.velocity += birdRef.current.gravity * timeScale;
+      birdRef.current.y += birdRef.current.velocity * timeScale;
+      
+      // Spawn pipes based on time, not frame count
+      const currentTime = performance.now();
+      const pipeSpawnInterval = 2000; // Spawn a pipe every 2 seconds
+      
+      if (lastPipeSpawnTime.current === 0) {
+        lastPipeSpawnTime.current = currentTime;
+      }
+      
+      if (currentTime - lastPipeSpawnTime.current >= pipeSpawnInterval) {
         const topHeight = Math.random() * (CANVAS_HEIGHT - PIPE_GAP - 100) + 50;
         const newPipe = {
           x: CANVAS_WIDTH,
@@ -289,12 +305,11 @@ export default function FlappyBird() {
         };
         pipesRef.current.push(newPipe);
         pipePositionsRef.current.set(newPipe, CANVAS_WIDTH);
+        lastPipeSpawnTime.current = currentTime;
       }
       
       // Move pipes with time-based animation for consistency
-      const deltaSeconds = deltaTimeRef.current / 1000;
-      const pixelsPerSecond = PIPE_SPEED * 60; // Convert from per-frame to per-second
-      const movement = pixelsPerSecond * deltaSeconds;
+      const movement = PIPE_SPEED * timeScale;
       
       // Clean up pipes more efficiently
       const activePipes: Pipe[] = [];
@@ -537,12 +552,19 @@ export default function FlappyBird() {
           return;
         }
         
+        // Add timeout to prevent getting stuck
+        const timeoutId = setTimeout(() => {
+          setCheckingHighScore(false);
+        }, 3000);
+        
         try {
           const { data, error } = await supabase
             .from('flappy_bird_leaderboard')
             .select('*')
             .order('score', { ascending: false })
             .limit(10);
+          
+          clearTimeout(timeoutId);
           
           if (!error && data) {
             // Check against fresh data directly
@@ -557,10 +579,14 @@ export default function FlappyBird() {
             }
             // Also update the leaderboard state for display
             setLeaderboard(data);
+          } else {
+            setCheckingHighScore(false);
           }
         } catch {
+          clearTimeout(timeoutId);
           // On error, still allow high score entry
           setShowNameInput(true);
+          setCheckingHighScore(false);
         }
       };
       checkAndShowHighScore();
@@ -676,7 +702,23 @@ export default function FlappyBird() {
           ref={canvasRef}
           width={CANVAS_WIDTH}
           height={CANVAS_HEIGHT}
-          onClick={jump}
+          onClick={() => {
+            // Direct click handling to avoid stale closures
+            if (showNameInputRef.current || checkingHighScoreRef.current) {
+              return;
+            }
+            
+            if (gameStateRef.current === 'playing') {
+              birdRef.current.velocity = birdRef.current.jumpPower;
+              flapAnimationRef.current = 25;
+            } else if (gameStateRef.current === 'idle') {
+              birdRef.current.velocity = birdRef.current.jumpPower;
+              flapAnimationRef.current = 25;
+              setGameState('playing');
+            } else if (gameStateRef.current === 'gameOver') {
+              resetGame();
+            }
+          }}
           className="border-4 border-gray-800 shadow-xl cursor-pointer touch-none select-none"
           style={{
             maxWidth: '100%',
