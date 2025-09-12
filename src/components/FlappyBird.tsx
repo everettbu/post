@@ -702,8 +702,8 @@ export default function FlappyBird() {
           ref={canvasRef}
           width={CANVAS_WIDTH}
           height={CANVAS_HEIGHT}
-          onClick={() => {
-            // Direct click handling to avoid stale closures
+          onMouseDown={() => {
+            // Direct click handling to avoid stale closures - using mouseDown for instant response
             if (showNameInputRef.current || checkingHighScoreRef.current) {
               return;
             }
