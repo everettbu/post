@@ -46,6 +46,7 @@ export default function FlappyBird() {
   const scoreRef = useRef(score);
   const leaderboardRef = useRef(leaderboard);
   const showNameInputRef = useRef(showNameInput);
+  const checkingHighScoreRef = useRef(checkingHighScore);
   
   const face1Ref = useRef<HTMLImageElement | null>(null);
   const face2Ref = useRef<HTMLImageElement | null>(null);
@@ -78,6 +79,10 @@ export default function FlappyBird() {
   useEffect(() => {
     showNameInputRef.current = showNameInput;
   }, [showNameInput]);
+  
+  useEffect(() => {
+    checkingHighScoreRef.current = checkingHighScore;
+  }, [checkingHighScore]);
   
   const jump = useCallback(() => {
     if (showNameInput || checkingHighScore) {
@@ -588,7 +593,22 @@ export default function FlappyBird() {
         if (e.target === canvas) {
           e.preventDefault();
           e.stopPropagation();
-          jump();
+          
+          // Directly check states using refs to avoid stale closure issues
+          if (showNameInputRef.current || checkingHighScoreRef.current) {
+            return;
+          }
+          
+          if (gameStateRef.current === 'playing') {
+            birdRef.current.velocity = birdRef.current.jumpPower;
+            flapAnimationRef.current = 25;
+          } else if (gameStateRef.current === 'idle') {
+            birdRef.current.velocity = birdRef.current.jumpPower;
+            flapAnimationRef.current = 25;
+            setGameState('playing');
+          } else if (gameStateRef.current === 'gameOver') {
+            resetGame();
+          }
         }
       };
       
@@ -610,7 +630,7 @@ export default function FlappyBird() {
         canvas.removeEventListener('touchend', preventMove);
       };
     }
-  }, [jump]);
+  }, []);
   
   useEffect(() => {
     const face1 = new window.Image();
