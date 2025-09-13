@@ -3,6 +3,7 @@ import "./globals.css";
 import Navigation from "@/components/Navigation";
 import { Metadata, Viewport } from 'next';
 import { getRandomOgImage } from '@/lib/get-random-og-image';
+import { CartProvider } from '@/contexts/CartContext';
 
 const bebasNeue = Bebas_Neue({ 
   weight: '400',
@@ -20,6 +21,7 @@ export const viewport: Viewport = {
 const ogImage = getRandomOgImage();
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://joep.com'),
   title: 'Joe P',
   description: 'Enter the world of Joe P (with games)',
   icons: {
@@ -57,8 +59,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={bebasNeue.className}>
-        <Navigation />
-        {children}
+        <CartProvider>
+          <Navigation />
+          {children}
+        </CartProvider>
       </body>
     </html>
   );
