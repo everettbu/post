@@ -1,11 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCart } from '@/contexts/CartContext';
 
 export default function CartButton() {
-  const { cart, loading, openCheckout } = useCart();
+  const { cart, loading, openCheckout, removeItem, updateItem } = useCart();
   const [isOpen, setIsOpen] = useState(false);
+  const [removingItems, setRemovingItems] = useState<Set<string>>(new Set());
+  const [showNotification, setShowNotification] = useState(false);
+  const [lastItemCount, setLastItemCount] = useState(-1);
 
   const itemCount = cart?.totalQuantity || 0;
   const totalAmount = cart?.cost.totalAmount.amount || '0';
@@ -16,11 +19,60 @@ export default function CartButton() {
     currency: currencyCode,
   }).format(parseFloat(totalAmount));
 
+  // Detect when items are added to cart
+  useEffect(() => {
+    // Skip the initial render/mount
+    if (lastItemCount === -1) {
+      setLastItemCount(itemCount);
+      return;
+    }
+    
+    // Only show notification if count increased and we're not removing items
+    if (itemCount > lastItemCount && removingItems.size === 0) {
+      // Item was added
+      setShowNotification(true);
+      setIsOpen(true);
+      
+      // Clear notification badge after 2 seconds, but keep cart open
+      const timer = setTimeout(() => {
+        setShowNotification(false);
+      }, 2000);
+      
+      setLastItemCount(itemCount);
+      return () => clearTimeout(timer);
+    } else {
+      setLastItemCount(itemCount);
+    }
+  }, [itemCount, lastItemCount, removingItems.size]);
+
+  const handleRemoveItem = async (lineId: string) => {
+    setRemovingItems(prev => new Set(prev).add(lineId));
+    try {
+      await removeItem(lineId);
+    } finally {
+      setRemovingItems(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(lineId);
+        return newSet;
+      });
+    }
+  };
+
+  const handleUpdateQuantity = async (lineId: string, newQuantity: number) => {
+    if (newQuantity < 1) {
+      await handleRemoveItem(lineId);
+    } else {
+      await updateItem(lineId, newQuantity);
+    }
+  };
+
   return (
     <>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-8 right-8 bg-black text-white rounded-full p-4 shadow-lg hover:bg-gray-800 transition-colors z-50"
+        className={`fixed bottom-8 right-8 bg-blue-600 text-white rounded-full p-4 shadow-lg hover:bg-blue-700 transition-all duration-300 z-50 ${
+          showNotification ? 'ring-4 ring-green-400' : ''
+        }`}
         disabled={loading}
       >
         <div className="relative">
@@ -43,49 +95,83 @@ export default function CartButton() {
         </div>
       </button>
 
+      {showNotification && !isOpen && (
+        <div className="fixed bottom-24 right-8 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-pulse">
+          Item added to cart!
+        </div>
+      )}
+
       {isOpen && (
-        <div className="fixed bottom-24 right-8 bg-white rounded-lg shadow-xl p-6 z-50 w-96 max-w-[calc(100vw-2rem)]">
+        <div className={`fixed bottom-24 left-1/2 transform -translate-x-1/2 md:left-auto md:right-8 md:transform-none bg-gray-900 border border-gray-700 rounded-lg shadow-xl p-6 z-50 w-96 max-w-[calc(100vw-2rem)] transition-all duration-300 ${
+          showNotification ? 'ring-2 ring-green-500' : ''
+        }`}>
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold">Shopping Cart</h3>
+            <h3 className="text-lg font-semibold text-white">
+              Shopping Cart
+              {showNotification && (
+                <span className="ml-2 text-sm text-green-400">Item added!</span>
+              )}
+            </h3>
             <button
               onClick={() => setIsOpen(false)}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-gray-400 hover:text-gray-200"
             >
               ✕
             </button>
           </div>
 
           {itemCount === 0 ? (
-            <p className="text-gray-500 text-center py-8">Your cart is empty</p>
+            <p className="text-gray-400 text-center py-8">Your cart is empty</p>
           ) : (
             <>
               <div className="space-y-3 max-h-64 overflow-y-auto">
                 {cart?.lines.edges.map((item) => (
-                  <div key={item.node.id} className="flex justify-between items-center">
-                    <div>
-                      <p className="font-medium">{item.node.merchandise.product.title}</p>
-                      <p className="text-sm text-gray-500">
-                        {item.node.merchandise.title} × {item.node.quantity}
+                  <div key={item.node.id} className="flex items-center justify-between py-3 border-b border-gray-800">
+                    <div className="flex-1 pr-4">
+                      <p className="font-medium text-white">{item.node.merchandise.product.title}</p>
+                      {item.node.merchandise.title !== 'Default Title' && (
+                        <p className="text-sm text-gray-400 mt-1">
+                          {item.node.merchandise.title}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="flex items-center space-x-1">
+                        <button
+                          onClick={() => handleUpdateQuantity(item.node.id, item.node.quantity - 1)}
+                          className="w-6 h-6 bg-gray-800 text-gray-300 rounded hover:bg-gray-700 hover:text-white flex items-center justify-center text-sm"
+                          disabled={loading}
+                        >
+                          {item.node.quantity === 1 ? '🗑' : '-'}
+                        </button>
+                        <span className="text-white w-8 text-center text-sm">{item.node.quantity}</span>
+                        <button
+                          onClick={() => handleUpdateQuantity(item.node.id, item.node.quantity + 1)}
+                          className="w-6 h-6 bg-gray-800 text-gray-300 rounded hover:bg-gray-700 hover:text-white flex items-center justify-center text-sm"
+                          disabled={loading}
+                        >
+                          +
+                        </button>
+                      </div>
+                      <p className="font-medium text-white min-w-[80px] text-right">
+                        {new Intl.NumberFormat('en-US', {
+                          style: 'currency',
+                          currency: item.node.merchandise.price.currencyCode,
+                        }).format(parseFloat(item.node.merchandise.price.amount) * item.node.quantity)}
                       </p>
                     </div>
-                    <p className="font-semibold">
-                      {new Intl.NumberFormat('en-US', {
-                        style: 'currency',
-                        currency: item.node.merchandise.price.currencyCode,
-                      }).format(parseFloat(item.node.merchandise.price.amount) * item.node.quantity)}
-                    </p>
                   </div>
                 ))}
               </div>
 
-              <div className="border-t mt-4 pt-4">
+              <div className="border-t border-gray-700 mt-4 pt-4">
                 <div className="flex justify-between items-center mb-4">
-                  <p className="text-lg font-semibold">Total:</p>
-                  <p className="text-lg font-bold">{formattedTotal}</p>
+                  <p className="text-lg font-semibold text-white">Total:</p>
+                  <p className="text-lg font-bold text-white">{formattedTotal}</p>
                 </div>
                 <button
                   onClick={openCheckout}
-                  className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors"
+                  className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   Checkout
                 </button>

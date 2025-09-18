@@ -24,8 +24,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     setIsAdding(true);
     try {
       await addItem(selectedVariant, quantity);
-      // Show success feedback
-      alert('Added to cart!');
+      // Cart notification will show automatically
     } catch {
       alert('Error adding to cart. Please try again.');
     } finally {
@@ -85,23 +84,23 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 
         {/* Product Info */}
         <div>
-          <h1 className="text-3xl font-bold mb-4">{product.title}</h1>
-          <p className="text-2xl font-semibold mb-6">{formattedPrice}</p>
+          <h1 className="text-3xl font-bold mb-4 text-white">{product.title}</h1>
+          <p className="text-2xl font-semibold mb-6 text-gray-200">{formattedPrice}</p>
           
           <div className="mb-6">
-            <p className="text-gray-700 whitespace-pre-wrap">{product.description}</p>
+            <p className="text-gray-300 whitespace-pre-wrap">{product.description}</p>
           </div>
 
           {/* Variant Selector */}
           {product.variants.edges.length > 1 && (
             <div className="mb-6">
-              <label className="block text-sm font-medium mb-2">
+              <label className="block text-sm font-medium mb-2 text-gray-200">
                 Options
               </label>
               <select
                 value={selectedVariant}
                 onChange={(e) => setSelectedVariant(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                className="w-64 px-4 py-2 bg-gray-800 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {product.variants.edges.map((variant) => (
                   <option
@@ -119,13 +118,13 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 
           {/* Quantity Selector */}
           <div className="mb-6">
-            <label className="block text-sm font-medium mb-2">
+            <label className="block text-sm font-medium mb-2 text-gray-200">
               Quantity
             </label>
             <div className="flex items-center space-x-3">
               <button
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="w-10 h-10 border border-gray-300 rounded-lg hover:bg-gray-100"
+                className="w-10 h-10 bg-gray-800 text-white border border-gray-600 rounded-lg hover:bg-gray-700"
               >
                 -
               </button>
@@ -133,11 +132,11 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                 type="number"
                 value={quantity}
                 onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                className="w-20 px-3 py-2 text-center border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                className="w-20 px-3 py-2 text-center bg-gray-800 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
               <button
                 onClick={() => setQuantity(quantity + 1)}
-                className="w-10 h-10 border border-gray-300 rounded-lg hover:bg-gray-100"
+                className="w-10 h-10 bg-gray-800 text-white border border-gray-600 rounded-lg hover:bg-gray-700"
               >
                 +
               </button>
@@ -148,7 +147,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
           <button
             onClick={handleAddToCart}
             disabled={!currentVariant?.availableForSale || isAdding || loading}
-            className="w-full bg-black text-white py-4 rounded-lg font-semibold hover:bg-gray-800 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="w-full bg-blue-600 text-white py-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed mb-6 md:mb-0"
           >
             {!currentVariant?.availableForSale
               ? 'Out of Stock'

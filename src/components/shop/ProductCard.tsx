@@ -30,10 +30,10 @@ export default function ProductCard({ product }: ProductCardProps) {
           />
         </div>
         <div className="mt-4 space-y-1">
-          <h3 className="text-lg font-medium text-gray-900 group-hover:text-gray-600 transition-colors">
+          <h3 className="text-lg font-medium text-white group-hover:text-gray-300 transition-colors">
             {product.title}
           </h3>
-          <p className="text-lg font-semibold text-gray-900">{formattedPrice}</p>
+          <p className="text-lg font-semibold text-gray-200">{formattedPrice}</p>
         </div>
       </div>
     </Link>

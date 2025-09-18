@@ -38,11 +38,12 @@ export async function GET() {
       } else {
         testResult = { success: true, shop: data?.shop };
       }
-    } catch (error: any) {
+    } catch (error) {
+      const errorDetails = error as { response?: { status?: number }, networkStatusCode?: number };
       testResult = { 
         success: false, 
-        error: error.message,
-        details: error.response?.status || error.networkStatusCode
+        error: error instanceof Error ? error.message : 'Unknown error',
+        details: errorDetails.response?.status || errorDetails.networkStatusCode
       };
     }
   }
