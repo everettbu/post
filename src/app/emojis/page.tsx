@@ -5,6 +5,7 @@ import Image from 'next/image';
 
 export default function EmojisPage() {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [animatingIndex, setAnimatingIndex] = useState<number | null>(null);
 
   const emojis = [
     '1FF7B09F-0576-45FE-99BF-8FF6AE1D7E55.png',
@@ -35,7 +36,11 @@ export default function EmojisPage() {
         });
         
         setCopiedIndex(index);
-        setTimeout(() => setCopiedIndex(null), 2000);
+        setAnimatingIndex(index);
+        setTimeout(() => {
+          setAnimatingIndex(null);
+          setTimeout(() => setCopiedIndex(null), 300);
+        }, 1700);
       } else {
         // Desktop: Copy to clipboard
         const response = await fetch(`/emojis/${emoji}`);
@@ -50,12 +55,20 @@ export default function EmojisPage() {
           ]);
           
           setCopiedIndex(index);
-          setTimeout(() => setCopiedIndex(null), 2000);
+          setAnimatingIndex(index);
+          setTimeout(() => {
+            setAnimatingIndex(null);
+            setTimeout(() => setCopiedIndex(null), 300);
+          }, 1700);
         } else {
           // Fallback: Copy image URL
           await navigator.clipboard.writeText(window.location.origin + `/emojis/${emoji}`);
           setCopiedIndex(index);
-          setTimeout(() => setCopiedIndex(null), 2000);
+          setAnimatingIndex(index);
+          setTimeout(() => {
+            setAnimatingIndex(null);
+            setTimeout(() => setCopiedIndex(null), 300);
+          }, 1700);
         }
       }
     } catch (err) {
@@ -64,7 +77,11 @@ export default function EmojisPage() {
       try {
         await navigator.clipboard.writeText(window.location.origin + `/emojis/${emoji}`);
         setCopiedIndex(index);
-        setTimeout(() => setCopiedIndex(null), 2000);
+        setAnimatingIndex(index);
+        setTimeout(() => {
+          setAnimatingIndex(null);
+          setTimeout(() => setCopiedIndex(null), 300);
+        }, 1700);
       } catch (fallbackErr) {
         console.error('Fallback copy also failed:', fallbackErr);
       }
@@ -121,7 +138,9 @@ export default function EmojisPage() {
             )}
             
             {copiedIndex === index && (
-              <div className="absolute inset-0 flex items-center justify-center rounded-2xl pointer-events-none animate-pulse">
+              <div className={`absolute inset-0 flex items-center justify-center rounded-2xl pointer-events-none transition-all duration-300 ${
+                animatingIndex === index ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+              }`}>
                 <div className="bg-gradient-to-br from-green-400 to-blue-400 text-white font-bold text-lg px-6 py-3 rounded-full shadow-2xl">
                   ✓ COPIED!
                 </div>
