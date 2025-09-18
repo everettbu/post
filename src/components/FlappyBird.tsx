@@ -27,7 +27,8 @@ export default function FlappyBird() {
   const [playerName, setPlayerName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
-  const [checkingHighScore, setCheckingHighScore] = useState(false);
+  const [isCheckingScore, setIsCheckingScore] = useState(false);
+  const [qualifiesForLeaderboard, setQualifiesForLeaderboard] = useState(false);
   
   const birdRef = useRef({
     y: 250,
@@ -47,7 +48,8 @@ export default function FlappyBird() {
   const scoreRef = useRef(score);
   const leaderboardRef = useRef(leaderboard);
   const showNameInputRef = useRef(showNameInput);
-  const checkingHighScoreRef = useRef(checkingHighScore);
+  const isCheckingScoreRef = useRef(isCheckingScore);
+  const qualifiesForLeaderboardRef = useRef(qualifiesForLeaderboard);
   
   const face1Ref = useRef<HTMLImageElement | null>(null);
   const face2Ref = useRef<HTMLImageElement | null>(null);
@@ -82,12 +84,16 @@ export default function FlappyBird() {
   }, [showNameInput]);
   
   useEffect(() => {
-    checkingHighScoreRef.current = checkingHighScore;
-  }, [checkingHighScore]);
+    isCheckingScoreRef.current = isCheckingScore;
+  }, [isCheckingScore]);
+  
+  useEffect(() => {
+    qualifiesForLeaderboardRef.current = qualifiesForLeaderboard;
+  }, [qualifiesForLeaderboard]);
   
   const jump = useCallback(() => {
-    if (showNameInput || checkingHighScore) {
-      // Don't jump if name input is showing or we're checking for high score
+    if (showNameInput) {
+      // Don't jump if name input is showing
       return;
     }
     
@@ -105,10 +111,17 @@ export default function FlappyBird() {
       // Only state change is starting the game
       setGameState('playing');
     } else if (gameState === 'gameOver') {
-      // Allow reset regardless of scoreSubmitted state
+      // Don't allow reset if score qualifies for leaderboard and hasn't been submitted
+      if (qualifiesForLeaderboard && !scoreSubmitted) {
+        // Force show name input if it's not already showing
+        if (!showNameInput) {
+          setShowNameInput(true);
+        }
+        return;
+      }
       resetGame();
     }
-  }, [gameState, showNameInput, checkingHighScore]);
+  }, [gameState, showNameInput, qualifiesForLeaderboard, scoreSubmitted]);
   
   const resetGame = () => {
     birdRef.current.y = 250;
@@ -123,7 +136,8 @@ export default function FlappyBird() {
     setShowNameInput(false);
     setPlayerName('');
     setScoreSubmitted(false);
-    setCheckingHighScore(false);
+    setIsCheckingScore(false);
+    setQualifiesForLeaderboard(false);
   };
   
   const fetchLeaderboard = async () => {
@@ -151,7 +165,8 @@ export default function FlappyBird() {
       setShowNameInput(false);
       setPlayerName('');
       setScoreSubmitted(true);
-      setCheckingHighScore(false);
+      setIsCheckingScore(false);
+      setQualifiesForLeaderboard(false);
       return;
     }
     
@@ -167,13 +182,15 @@ export default function FlappyBird() {
       setShowNameInput(false);
       setPlayerName('');
       setScoreSubmitted(true);
-      setCheckingHighScore(false);
+      setIsCheckingScore(false);
+      setQualifiesForLeaderboard(false);
     } catch {
       // Silently handle error
       setShowNameInput(false);
       setPlayerName('');
       setScoreSubmitted(true);
-      setCheckingHighScore(false);
+      setIsCheckingScore(false);
+      setQualifiesForLeaderboard(false);
     } finally {
       setIsSubmitting(false);
     }
@@ -297,7 +314,11 @@ export default function FlappyBird() {
       }
       
       if (currentTime - lastPipeSpawnTime.current >= pipeSpawnInterval) {
-        const topHeight = Math.random() * (CANVAS_HEIGHT - PIPE_GAP - 100) + 50;
+        // Ensure pipes don't get too close to ground or ceiling
+        const MIN_PIPE_HEIGHT = 80;  // Minimum height for top pipe
+        const MIN_BOTTOM_CLEARANCE = 100;  // Minimum clearance from ground for bottom pipe
+        const maxTopHeight = CANVAS_HEIGHT - PIPE_GAP - MIN_BOTTOM_CLEARANCE;
+        const topHeight = Math.random() * (maxTopHeight - MIN_PIPE_HEIGHT) + MIN_PIPE_HEIGHT;
         const newPipe = {
           x: CANVAS_WIDTH,
           topHeight,
@@ -346,7 +367,17 @@ export default function FlappyBird() {
       
       if (checkCollision(birdRef.current.y, pipesRef.current)) {
         // Sync the score from ref to state when game ends
-        setScore(scoreRef.current);
+        const finalScore = scoreRef.current;
+        setScore(finalScore);
+        
+        // Immediately check if score qualifies for leaderboard
+        if (finalScore > 0 && leaderboardRef.current) {
+          const qualifies = leaderboardRef.current.length < 10 || 
+                           finalScore > (leaderboardRef.current[9]?.score || 0);
+          setQualifiesForLeaderboard(qualifies);
+          qualifiesForLeaderboardRef.current = qualifies;
+        }
+        
         setGameState('gameOver');
       }
     }
@@ -514,7 +545,7 @@ export default function FlappyBird() {
         ctx.fillText('NO SCORES YET!', CANVAS_WIDTH/2, startY + 30);
       }
       
-      // Play again prompt
+      // Play again prompt - always show unless entering name
       ctx.font = 'bold 18px monospace';
       ctx.fillStyle = '#0F0';
       ctx.textAlign = 'center';
@@ -539,59 +570,11 @@ export default function FlappyBird() {
   }, [gameLoop]);
   
   useEffect(() => {
-    if (gameState === 'gameOver' && score > 0 && !scoreSubmitted && !checkingHighScore) {
-      // Set checking flag immediately to prevent race conditions
-      setCheckingHighScore(true);
-      
-      // Fetch fresh leaderboard data before checking high score
-      const checkAndShowHighScore = async () => {
-        // If no Supabase, just check immediately
-        if (!supabase) {
-          setShowNameInput(true);
-          setCheckingHighScore(false);
-          return;
-        }
-        
-        // Add timeout to prevent getting stuck
-        const timeoutId = setTimeout(() => {
-          setCheckingHighScore(false);
-        }, 3000);
-        
-        try {
-          const { data, error } = await supabase
-            .from('flappy_bird_leaderboard')
-            .select('*')
-            .order('score', { ascending: false })
-            .limit(10);
-          
-          clearTimeout(timeoutId);
-          
-          if (!error && data) {
-            // Check against fresh data directly
-            const qualifiesForLeaderboard = 
-              data.length < 10 || score > (data[9]?.score || 0);
-            
-            if (qualifiesForLeaderboard) {
-              setShowNameInput(true);
-            } else {
-              // Not a high score, allow immediate restart
-              setCheckingHighScore(false);
-            }
-            // Also update the leaderboard state for display
-            setLeaderboard(data);
-          } else {
-            setCheckingHighScore(false);
-          }
-        } catch {
-          clearTimeout(timeoutId);
-          // On error, still allow high score entry
-          setShowNameInput(true);
-          setCheckingHighScore(false);
-        }
-      };
-      checkAndShowHighScore();
+    if (gameState === 'gameOver' && qualifiesForLeaderboard && !scoreSubmitted && !showNameInput) {
+      // Immediately show name input for qualifying scores
+      setShowNameInput(true);
     }
-  }, [gameState, score, scoreSubmitted, checkingHighScore]);
+  }, [gameState, qualifiesForLeaderboard, scoreSubmitted, showNameInput]);
   
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -621,7 +604,7 @@ export default function FlappyBird() {
           e.stopPropagation();
           
           // Directly check states using refs to avoid stale closure issues
-          if (showNameInputRef.current || checkingHighScoreRef.current) {
+          if (showNameInputRef.current) {
             return;
           }
           
@@ -633,7 +616,13 @@ export default function FlappyBird() {
             flapAnimationRef.current = 25;
             setGameState('playing');
           } else if (gameStateRef.current === 'gameOver') {
-            resetGame();
+            // Check if score qualifies for leaderboard
+            if (qualifiesForLeaderboardRef.current && !scoreSubmitted) {
+              // Force show name input
+              setShowNameInput(true);
+            } else {
+              resetGame();
+            }
           }
         }
       };
@@ -704,7 +693,7 @@ export default function FlappyBird() {
           height={CANVAS_HEIGHT}
           onMouseDown={() => {
             // Direct click handling to avoid stale closures - using mouseDown for instant response
-            if (showNameInputRef.current || checkingHighScoreRef.current) {
+            if (showNameInputRef.current) {
               return;
             }
             
@@ -716,7 +705,13 @@ export default function FlappyBird() {
               flapAnimationRef.current = 25;
               setGameState('playing');
             } else if (gameStateRef.current === 'gameOver') {
-              resetGame();
+              // Check if score qualifies for leaderboard
+              if (qualifiesForLeaderboardRef.current && !scoreSubmitted) {
+                // Force show name input
+                setShowNameInput(true);
+              } else {
+                resetGame();
+              }
             }
           }}
           className="border-4 border-gray-800 shadow-xl cursor-pointer touch-none select-none"
