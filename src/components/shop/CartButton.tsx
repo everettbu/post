@@ -12,7 +12,7 @@ export default function CartButton() {
   
   const cartRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const notificationTimeoutRef = useRef<NodeJS.Timeout>();
+  const notificationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const itemCount = cart?.totalQuantity || 0;
   const totalAmount = cart?.cost.totalAmount.amount || '0';
