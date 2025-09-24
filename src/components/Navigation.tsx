@@ -47,7 +47,7 @@ export default function Navigation() {
           Games
         </Link>
         <Link 
-          href="/emojis" 
+          href="/joemojis" 
           className="text-3xl hover:text-gray-600 transition-colors"
         >
           Joemojis
@@ -87,7 +87,7 @@ export default function Navigation() {
             Games
           </Link>
           <Link 
-            href="/emojis" 
+            href="/joemojis" 
             className="text-4xl hover:text-gray-600 transition-colors"
           >
             Joemojis

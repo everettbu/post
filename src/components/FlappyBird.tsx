@@ -645,7 +645,7 @@ export default function FlappyBird() {
         canvas.removeEventListener('touchend', preventMove);
       };
     }
-  }, []);
+  }, [scoreSubmitted]);
   
   useEffect(() => {
     const face1 = new window.Image();
