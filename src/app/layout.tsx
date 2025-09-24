@@ -3,7 +3,6 @@ import "./globals.css";
 import Navigation from "@/components/Navigation";
 import { Metadata, Viewport } from 'next';
 import { getRandomOgImage } from '@/lib/get-random-og-image';
-import { CartProvider } from '@/contexts/CartContext';
 
 const bebasNeue = Bebas_Neue({ 
   weight: '400',
@@ -59,10 +58,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={bebasNeue.className}>
-        <CartProvider>
           <Navigation />
           {children}
-        </CartProvider>
       </body>
     </html>
   );

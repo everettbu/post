@@ -23,12 +23,14 @@ export default function FlappyBird() {
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(0);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [dailyHighScores, setDailyHighScores] = useState<LeaderboardEntry[]>([]);
   const [showNameInput, setShowNameInput] = useState(false);
   const [playerName, setPlayerName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
   const [isCheckingScore, setIsCheckingScore] = useState(false);
   const [qualifiesForLeaderboard, setQualifiesForLeaderboard] = useState(false);
+  const [qualifiesForDailyLeaderboard, setQualifiesForDailyLeaderboard] = useState(false);
   
   const birdRef = useRef({
     y: 250,
@@ -47,9 +49,11 @@ export default function FlappyBird() {
   const gameStateRef = useRef(gameState);
   const scoreRef = useRef(score);
   const leaderboardRef = useRef(leaderboard);
+  const dailyHighScoresRef = useRef(dailyHighScores);
   const showNameInputRef = useRef(showNameInput);
   const isCheckingScoreRef = useRef(isCheckingScore);
   const qualifiesForLeaderboardRef = useRef(qualifiesForLeaderboard);
+  const qualifiesForDailyLeaderboardRef = useRef(qualifiesForDailyLeaderboard);
   
   const face1Ref = useRef<HTMLImageElement | null>(null);
   const face2Ref = useRef<HTMLImageElement | null>(null);
@@ -80,6 +84,10 @@ export default function FlappyBird() {
   }, [leaderboard]);
   
   useEffect(() => {
+    dailyHighScoresRef.current = dailyHighScores;
+  }, [dailyHighScores]);
+  
+  useEffect(() => {
     showNameInputRef.current = showNameInput;
   }, [showNameInput]);
   
@@ -90,6 +98,10 @@ export default function FlappyBird() {
   useEffect(() => {
     qualifiesForLeaderboardRef.current = qualifiesForLeaderboard;
   }, [qualifiesForLeaderboard]);
+  
+  useEffect(() => {
+    qualifiesForDailyLeaderboardRef.current = qualifiesForDailyLeaderboard;
+  }, [qualifiesForDailyLeaderboard]);
   
   const jump = useCallback(() => {
     if (showNameInput) {
@@ -111,8 +123,8 @@ export default function FlappyBird() {
       // Only state change is starting the game
       setGameState('playing');
     } else if (gameState === 'gameOver') {
-      // Don't allow reset if score qualifies for leaderboard and hasn't been submitted
-      if (qualifiesForLeaderboard && !scoreSubmitted) {
+      // Don't allow reset if score qualifies for either leaderboard and hasn't been submitted
+      if ((qualifiesForLeaderboard || qualifiesForDailyLeaderboard) && !scoreSubmitted) {
         // Force show name input if it's not already showing
         if (!showNameInput) {
           setShowNameInput(true);
@@ -121,7 +133,7 @@ export default function FlappyBird() {
       }
       resetGame();
     }
-  }, [gameState, showNameInput, qualifiesForLeaderboard, scoreSubmitted]);
+  }, [gameState, showNameInput, qualifiesForLeaderboard, qualifiesForDailyLeaderboard, scoreSubmitted]);
   
   const resetGame = () => {
     birdRef.current.y = 250;
@@ -138,6 +150,7 @@ export default function FlappyBird() {
     setScoreSubmitted(false);
     setIsCheckingScore(false);
     setQualifiesForLeaderboard(false);
+    setQualifiesForDailyLeaderboard(false);
   };
   
   const fetchLeaderboard = async () => {
@@ -158,6 +171,31 @@ export default function FlappyBird() {
     }
   };
   
+  const fetchDailyHighScores = async () => {
+    if (!supabase) {
+      return;
+    }
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      const { data, error } = await supabase
+        .from('flappy_bird_leaderboard')
+        .select('*')
+        .gte('created_at', today.toISOString())
+        .lt('created_at', tomorrow.toISOString())
+        .order('score', { ascending: false })
+        .limit(3);
+      
+      if (error) throw error;
+      if (data) setDailyHighScores(data);
+    } catch {
+      // Silently handle error
+    }
+  };
+  
   const submitScore = async () => {
     if (!playerName.trim() || score === 0) return;
     
@@ -167,6 +205,8 @@ export default function FlappyBird() {
       setScoreSubmitted(true);
       setIsCheckingScore(false);
       setQualifiesForLeaderboard(false);
+      setQualifiesForDailyLeaderboard(false);
+      setQualifiesForDailyLeaderboard(false);
       return;
     }
     
@@ -179,11 +219,13 @@ export default function FlappyBird() {
       if (error) throw error;
       
       await fetchLeaderboard();
+      await fetchDailyHighScores();
       setShowNameInput(false);
       setPlayerName('');
       setScoreSubmitted(true);
       setIsCheckingScore(false);
       setQualifiesForLeaderboard(false);
+      setQualifiesForDailyLeaderboard(false);
     } catch {
       // Silently handle error
       setShowNameInput(false);
@@ -191,6 +233,7 @@ export default function FlappyBird() {
       setScoreSubmitted(true);
       setIsCheckingScore(false);
       setQualifiesForLeaderboard(false);
+      setQualifiesForDailyLeaderboard(false);
     } finally {
       setIsSubmitting(false);
     }
@@ -378,6 +421,14 @@ export default function FlappyBird() {
           qualifiesForLeaderboardRef.current = qualifies;
         }
         
+        // Check if score qualifies for daily leaderboard
+        if (finalScore > 0 && dailyHighScoresRef.current) {
+          const dailyQualifies = dailyHighScoresRef.current.length < 3 || 
+                                finalScore > (dailyHighScoresRef.current[2]?.score || 0);
+          setQualifiesForDailyLeaderboard(dailyQualifies);
+          qualifiesForDailyLeaderboardRef.current = dailyQualifies;
+        }
+        
         setGameState('gameOver');
       }
     }
@@ -496,7 +547,7 @@ export default function FlappyBird() {
       const boxX = 60;
       const boxY = 120;
       const boxWidth = 380;
-      const boxHeight = 350;
+      const boxHeight = 480;
       
       // Outer border
       ctx.fillStyle = '#FFF';
@@ -545,6 +596,55 @@ export default function FlappyBird() {
         ctx.fillText('NO SCORES YET!', CANVAS_WIDTH/2, startY + 30);
       }
       
+      // Daily High Scores Section
+      const dailyStartY = boxY + 350;
+      
+      // Divider line
+      ctx.strokeStyle = '#FFD700';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(boxX + 20, dailyStartY - 20);
+      ctx.lineTo(boxX + boxWidth - 20, dailyStartY - 20);
+      ctx.stroke();
+      
+      // Daily title
+      ctx.font = 'bold 18px monospace';
+      ctx.fillStyle = '#00FF00';
+      ctx.textAlign = 'center';
+      ctx.fillText('-- TODAY\'S BEST --', CANVAS_WIDTH/2, dailyStartY + 10);
+      
+      // Daily scores
+      ctx.font = '16px monospace';
+      const dailyEntriesY = dailyStartY + 40;
+      
+      if (dailyHighScoresRef.current.length > 0) {
+        dailyHighScoresRef.current.slice(0, 3).forEach((entry, index) => {
+          const y = dailyEntriesY + (index * lineHeight);
+          
+          // Rank with daily colors
+          if (index === 0) ctx.fillStyle = '#00FF00';
+          else if (index === 1) ctx.fillStyle = '#00CC00';
+          else ctx.fillStyle = '#009900';
+          
+          ctx.textAlign = 'left';
+          ctx.fillText(`${(index + 1).toString().padStart(2, '0')}.`, boxX + 25, y);
+          
+          // Name
+          ctx.fillStyle = '#FFF';
+          const truncatedName = entry.name.length > 20 ? entry.name.substring(0, 20) + '..' : entry.name;
+          ctx.fillText(truncatedName, boxX + 65, y);
+          
+          // Score
+          ctx.fillStyle = '#0FF';
+          ctx.textAlign = 'right';
+          ctx.fillText(entry.score.toString().padStart(4, '0'), boxX + boxWidth - 25, y);
+        });
+      } else {
+        ctx.fillStyle = '#888';
+        ctx.textAlign = 'center';
+        ctx.fillText('NO SCORES TODAY!', CANVAS_WIDTH/2, dailyEntriesY + 15);
+      }
+      
       // Play again prompt - always show unless entering name
       ctx.font = 'bold 18px monospace';
       ctx.fillStyle = '#0F0';
@@ -570,11 +670,15 @@ export default function FlappyBird() {
   }, [gameLoop]);
   
   useEffect(() => {
-    if (gameState === 'gameOver' && qualifiesForLeaderboard && !scoreSubmitted && !showNameInput) {
-      // Immediately show name input for qualifying scores
+    if (gameState === 'gameOver' && (qualifiesForLeaderboard || qualifiesForDailyLeaderboard) && !scoreSubmitted && !showNameInput) {
+      // Immediately show name input for qualifying scores (either all-time or daily)
       setShowNameInput(true);
     }
-  }, [gameState, qualifiesForLeaderboard, scoreSubmitted, showNameInput]);
+    if (gameState === 'gameOver') {
+      // Refresh daily scores when game ends
+      fetchDailyHighScores();
+    }
+  }, [gameState, qualifiesForLeaderboard, qualifiesForDailyLeaderboard, scoreSubmitted, showNameInput]);
   
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -616,8 +720,8 @@ export default function FlappyBird() {
             flapAnimationRef.current = 25;
             setGameState('playing');
           } else if (gameStateRef.current === 'gameOver') {
-            // Check if score qualifies for leaderboard
-            if (qualifiesForLeaderboardRef.current && !scoreSubmitted) {
+            // Check if score qualifies for either leaderboard
+            if ((qualifiesForLeaderboardRef.current || qualifiesForDailyLeaderboardRef.current) && !scoreSubmitted) {
               // Force show name input
               setShowNameInput(true);
             } else {
@@ -675,6 +779,7 @@ export default function FlappyBird() {
       setHighScore(parseInt(savedHighScore));
     }
     fetchLeaderboard();
+    fetchDailyHighScores();
   }, []);
   
   useEffect(() => {
