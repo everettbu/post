@@ -2,6 +2,7 @@ import { getProduct } from '@/lib/shopify/api';
 import ProductDetail from '@/components/shop/ProductDetail';
 import CartButton from '@/components/shop/CartButton';
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 
 interface ProductPageProps {
   params: Promise<{ handle: string }>;
@@ -37,8 +38,29 @@ export default async function ProductPage({ params }: ProductPageProps) {
     });
 
     return (
-      <div className="min-h-screen pt-32 px-4 sm:px-8">
-        <ProductDetail product={product} />
+      <div className="min-h-screen pt-24 px-4 sm:px-8">
+        <div className="max-w-7xl mx-auto">
+          <Link 
+            href="/shop" 
+            className="inline-flex items-center text-gray-400 hover:text-white mb-6 transition-colors"
+          >
+            <svg 
+              className="w-5 h-5 mr-2" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M10 19l-7-7m0 0l7-7m-7 7h18" 
+              />
+            </svg>
+            Back to Shop
+          </Link>
+          <ProductDetail product={product} />
+        </div>
         <CartButton />
       </div>
     );
