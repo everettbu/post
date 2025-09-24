@@ -17,6 +17,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [imageError, setImageError] = useState(false);
 
   const handleAddToCart = async () => {
     if (!selectedVariant) return;
@@ -42,7 +43,18 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     currency: currentVariant?.price.currencyCode || 'USD',
   }).format(price);
 
-  const images = product.images.edges;
+  const images = product.images?.edges || [];
+  const hasImages = images.length > 0;
+  const currentImage = images[selectedImage];
+  
+  // Debug logging for production
+  if (typeof window !== 'undefined' && !currentImage && hasImages) {
+    console.error('Image carousel issue:', {
+      selectedImage,
+      imagesLength: images.length,
+      images: images.map(img => ({ url: img.node.url }))
+    });
+  }
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -50,13 +62,26 @@ export default function ProductDetail({ product }: ProductDetailProps) {
         {/* Images */}
         <div>
           <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-100">
-            {images[selectedImage] && (
+            {hasImages && currentImage && !imageError ? (
               <Image
-                src={images[selectedImage].node.url}
-                alt={images[selectedImage].node.altText || product.title}
+                src={currentImage.node.url}
+                alt={currentImage.node.altText || product.title}
                 fill
                 className="object-cover object-center"
+                sizes="(max-width: 768px) 100vw, 50vw"
+                priority
+                onError={() => {
+                  console.error('Failed to load image:', currentImage.node.url);
+                  setImageError(true);
+                }}
+                onLoad={() => setImageError(false)}
               />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-gray-400">
+                <svg className="w-24 h-24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
             )}
           </div>
           
@@ -65,9 +90,12 @@ export default function ProductDetail({ product }: ProductDetailProps) {
               {images.map((image, index) => (
                 <button
                   key={index}
-                  onClick={() => setSelectedImage(index)}
+                  onClick={() => {
+                    setSelectedImage(index);
+                    setImageError(false);
+                  }}
                   className={`relative aspect-square overflow-hidden rounded-lg bg-gray-100 ${
-                    selectedImage === index ? 'ring-2 ring-black' : ''
+                    selectedImage === index ? 'ring-2 ring-blue-500' : ''
                   }`}
                 >
                   <Image
@@ -75,6 +103,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                     alt={image.node.altText || ''}
                     fill
                     className="object-cover object-center"
+                    sizes="(max-width: 768px) 25vw, 12.5vw"
                   />
                 </button>
               ))}
