@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useCart } from '@/contexts/CartContext';
 
 export default function CartButton() {
@@ -9,6 +9,10 @@ export default function CartButton() {
   const [removingItems, setRemovingItems] = useState<Set<string>>(new Set());
   const [showNotification, setShowNotification] = useState(false);
   const [lastItemCount, setLastItemCount] = useState(-1);
+  
+  const cartRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const notificationTimeoutRef = useRef<NodeJS.Timeout>();
 
   const itemCount = cart?.totalQuantity || 0;
   const totalAmount = cart?.cost.totalAmount.amount || '0';
@@ -33,17 +37,50 @@ export default function CartButton() {
       setShowNotification(true);
       setIsOpen(true);
       
-      // Clear notification badge after 2 seconds, but keep cart open
-      const timer = setTimeout(() => {
+      // Clear any existing timeout
+      if (notificationTimeoutRef.current) {
+        clearTimeout(notificationTimeoutRef.current);
+      }
+      
+      // Set new timeout - keep notification longer (5 seconds)
+      notificationTimeoutRef.current = setTimeout(() => {
         setShowNotification(false);
-      }, 2000);
+      }, 5000);
       
       setLastItemCount(itemCount);
-      return () => clearTimeout(timer);
     } else {
       setLastItemCount(itemCount);
     }
   }, [itemCount, lastItemCount, removingItems.size]);
+
+  // Click outside detection
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      // Check if click is outside cart and button
+      if (
+        cartRef.current && 
+        !cartRef.current.contains(event.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target as Node)
+      ) {
+        // Close cart and clear notification immediately
+        setIsOpen(false);
+        setShowNotification(false);
+        
+        // Clear any pending timeout
+        if (notificationTimeoutRef.current) {
+          clearTimeout(notificationTimeoutRef.current);
+        }
+      }
+    };
+
+    if (isOpen || showNotification) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [isOpen, showNotification]);
 
   const handleRemoveItem = async (lineId: string) => {
     setRemovingItems(prev => new Set(prev).add(lineId));
@@ -69,6 +106,7 @@ export default function CartButton() {
   return (
     <>
       <button
+        ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
         className={`fixed bottom-8 right-8 bg-blue-600 text-white rounded-full p-4 shadow-lg hover:bg-blue-700 transition-all duration-300 z-50 ${
           showNotification ? 'ring-4 ring-green-400' : ''
@@ -102,7 +140,9 @@ export default function CartButton() {
       )}
 
       {isOpen && (
-        <div className={`fixed bottom-24 left-1/2 transform -translate-x-1/2 md:left-auto md:right-8 md:transform-none bg-gray-900 border border-gray-700 rounded-lg shadow-xl p-6 z-50 w-96 max-w-[calc(100vw-2rem)] transition-all duration-300 ${
+        <div 
+          ref={cartRef}
+          className={`fixed bottom-24 left-1/2 transform -translate-x-1/2 md:left-auto md:right-8 md:transform-none bg-gray-900 border border-gray-700 rounded-lg shadow-xl p-6 z-50 w-96 max-w-[calc(100vw-2rem)] transition-all duration-300 ${
           showNotification ? 'ring-2 ring-green-500' : ''
         }`}>
           <div className="flex justify-between items-center mb-4">
