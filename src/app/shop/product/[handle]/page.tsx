@@ -4,9 +4,7 @@ import CartButton from '@/components/shop/CartButton';
 import { notFound } from 'next/navigation';
 
 interface ProductPageProps {
-  params: Promise<{
-    handle: string;
-  }>;
+  params: Promise<{ handle: string }>;
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {

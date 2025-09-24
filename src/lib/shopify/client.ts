@@ -1,7 +1,7 @@
 import { createStorefrontApiClient } from '@shopify/storefront-api-client';
 
-const domain = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN;
-const storefrontAccessToken = process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN;
+const domain = process.env.SHOPIFY_STORE_DOMAIN || process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN;
+const storefrontAccessToken = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN || process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN;
 
 if (!domain || !storefrontAccessToken) {
   console.warn('Shopify environment variables are not configured');
