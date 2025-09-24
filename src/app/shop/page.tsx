@@ -1,9 +1,11 @@
 import { getProducts } from '@/lib/shopify/api';
 import ProductCard from '@/components/shop/ProductCard';
 import CartButton from '@/components/shop/CartButton';
+import { sortProductsByCustomOrder } from '@/lib/product-order';
 
 export default async function ShopPage() {
   const products = await getProducts(20);
+  const sortedProducts = products ? sortProductsByCustomOrder(products) : [];
 
   if (!products || products.length === 0) {
     return (
@@ -31,10 +33,8 @@ export default async function ShopPage() {
   return (
     <div className="min-h-screen pt-32 px-4 sm:px-8">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl font-bold mb-8 text-white">Shop</h1>
-        
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-          {products.map((product) => (
+          {sortedProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>

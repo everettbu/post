@@ -113,17 +113,17 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 
         {/* Product Info */}
         <div>
-          <h1 className="text-3xl font-bold mb-4 text-white">{product.title}</h1>
-          <p className="text-2xl font-semibold mb-6 text-gray-200">{formattedPrice}</p>
+          <h1 className="text-4xl font-bold mb-4 text-white">{product.title}</h1>
+          <p className="text-3xl font-semibold mb-6 text-gray-200">{formattedPrice}</p>
           
           <div className="mb-6">
-            <p className="text-gray-300 whitespace-pre-wrap">{product.description}</p>
+            <p className="text-lg text-gray-300 whitespace-pre-wrap leading-relaxed">{product.description}</p>
           </div>
 
           {/* Variant Selector */}
           {product.variants.edges.length > 1 && (
             <div className="mb-6">
-              <label className="block text-sm font-medium mb-2 text-gray-200">
+              <label className="block text-base font-medium mb-2 text-gray-200">
                 Options
               </label>
               <select
@@ -147,7 +147,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 
           {/* Quantity Selector */}
           <div className="mb-6">
-            <label className="block text-sm font-medium mb-2 text-gray-200">
+            <label className="block text-base font-medium mb-2 text-gray-200">
               Quantity
             </label>
             <div className="flex items-center space-x-3">
