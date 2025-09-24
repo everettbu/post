@@ -19,7 +19,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   const imageAlt = product.images.edges[0]?.node.altText || product.title;
 
   return (
-    <Link href={`/shop/product/${product.handle}`}>
+    <Link href={`/shop/${product.handle}`}>
       <div className="group cursor-pointer">
         <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-100">
           <Image
