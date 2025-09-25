@@ -10,7 +10,7 @@ export default function EmojisPage() {
       <div className="text-center">
         <h1 className="text-6xl font-bold mb-4 text-white">Coming Soon...</h1>
         <p className="text-2xl text-gray-400">
-          Joemojis available 9/26/25, stay tuned
+          Joemojis available 9/26/25, 2pm PST
         </p>
       </div>
     </div>
