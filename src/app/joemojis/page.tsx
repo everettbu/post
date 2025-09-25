@@ -1,9 +1,23 @@
 'use client';
 
-import { useState } from 'react';
-import Image from 'next/image';
+// import { useState } from 'react';
+// import Image from 'next/image';
 
 export default function EmojisPage() {
+  // TEMPORARILY DISABLED - Remove this block to re-enable joemojis
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-6xl font-bold mb-4 text-white">Coming Soon...</h1>
+        <p className="text-2xl text-gray-400">
+          Joemojis available 9/26/25, stay tuned
+        </p>
+      </div>
+    </div>
+  );
+
+  // Original joemojis code - uncomment below to re-enable
+  /*
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [animatingIndex, setAnimatingIndex] = useState<number | null>(null);
 
@@ -156,4 +170,5 @@ export default function EmojisPage() {
       </div>
     </div>
   );
+  */
 }
