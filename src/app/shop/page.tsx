@@ -1,23 +1,9 @@
-// import { getProducts } from '@/lib/shopify/api';
-// import ProductCard from '@/components/shop/ProductCard';
-// import CartButton from '@/components/shop/CartButton';
-// import { sortProductsByCustomOrder } from '@/lib/product-order';
+import { getProducts } from '@/lib/shopify/api';
+import ProductCard from '@/components/shop/ProductCard';
+import CartButton from '@/components/shop/CartButton';
+import { sortProductsByCustomOrder } from '@/lib/product-order';
 
 export default async function ShopPage() {
-  // TEMPORARILY DISABLED - Remove this block to re-enable shop
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-6xl font-bold mb-4 text-white">Coming Soon...</h1>
-        <p className="text-2xl text-gray-400">
-          Shop available 9/27/25, 8:30pm PST
-        </p>
-      </div>
-    </div>
-  );
-
-  // Original shop code - uncomment to re-enable
-  /*
   const products = await getProducts(20);
   const sortedProducts = products ? sortProductsByCustomOrder(products) : [];
 
@@ -57,5 +43,4 @@ export default async function ShopPage() {
       <CartButton />
     </div>
   );
-  */
 }
