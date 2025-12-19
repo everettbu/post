@@ -22,7 +22,7 @@
     "d3-scale": "^4.0.2",
     "date-fns": "^4.1.0",
     "lucide-react": "^0.474.0",
-    "next": "latest",
+    "next": "^16.1.0",
     "react": "latest",
     "react-dom": "latest",
     "react-simple-maps": "^3.0.0",
