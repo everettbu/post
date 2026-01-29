@@ -5,7 +5,7 @@
 @layer base {
   :root {
     /* Deep blue-black background with blue tinted foreground */
-    --background: 222 47% 8%;      /* #070c1f - slightly lighter dark blue */
+    --background: 222 47% 4%;      /* darker navy blue */
     --foreground: 210 40% 98%;     /* #F8FAFC - blue tinted white */
     
     --card: 222 47% 5%;            /* #050913 - slightly lighter than background */

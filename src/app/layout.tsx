@@ -3,7 +3,6 @@ import "./globals.css";
 import Navigation from "@/components/Navigation";
 import { Metadata, Viewport } from 'next';
 import { getRandomOgImage } from '@/lib/get-random-og-image';
-import { CartProvider } from '@/contexts/CartContext';
 import FlappyWallProvider from '@/components/FlappyWallProvider';
 
 const bebasNeue = Bebas_Neue({ 
@@ -61,10 +60,8 @@ export default function RootLayout({
     <html lang="en">
       <body className={bebasNeue.className}>
         <FlappyWallProvider>
-          <CartProvider>
-            <Navigation />
-            {children}
-          </CartProvider>
+          <Navigation />
+          {children}
         </FlappyWallProvider>
       </body>
     </html>

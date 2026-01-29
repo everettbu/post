@@ -34,23 +34,23 @@ export default function Navigation() {
             className="cursor-pointer"
           />
         </Link>
-        <Link 
-          href="/shop" 
-          className="text-3xl hover:text-gray-600 transition-colors"
-        >
-          Shop
-        </Link>
-        <Link 
+        <Link
           href="/games" 
           className="text-3xl hover:text-gray-600 transition-colors"
         >
           Games
         </Link>
-        <Link 
-          href="/joemojis" 
+        <Link
+          href="/joemojis"
           className="text-3xl hover:text-gray-600 transition-colors"
         >
           Joemojis
+        </Link>
+        <Link
+          href="/bracket"
+          className="text-3xl hover:text-gray-600 transition-colors"
+        >
+          Bracket
         </Link>
       </div>
       
@@ -74,23 +74,23 @@ export default function Navigation() {
         </Link>
         
         <div className="flex gap-12">
-          <Link 
-            href="/shop" 
-            className="text-4xl hover:text-gray-600 transition-colors"
-          >
-            Shop
-          </Link>
-          <Link 
+          <Link
             href="/games" 
             className="text-4xl hover:text-gray-600 transition-colors"
           >
             Games
           </Link>
-          <Link 
-            href="/joemojis" 
+          <Link
+            href="/joemojis"
             className="text-4xl hover:text-gray-600 transition-colors"
           >
             Joemojis
+          </Link>
+          <Link
+            href="/bracket"
+            className="text-4xl hover:text-gray-600 transition-colors"
+          >
+            Bracket
           </Link>
         </div>
       </div>
