@@ -138,14 +138,12 @@ export default function Bracket({ initialBracket = 'food' }: BracketProps) {
   const [teams, setTeams] = useState<string[]>(BRACKET_DATA[initialBracket].teams);
   const [regionNames, setRegionNames] = useState<string[]>(BRACKET_DATA[initialBracket].regions);
   const [bracket, setBracket] = useState<BracketData>(() => populateBracket(BRACKET_DATA[initialBracket].teams));
-  const [maintainRegions, setMaintainRegions] = useState(BRACKET_DATA[initialBracket].maintainRegions);
 
   const selectBracket = useCallback((type: BracketType) => {
     const data = BRACKET_DATA[type];
     setBracketType(type);
     setTeams(data.teams);
     setRegionNames(data.regions);
-    setMaintainRegions(data.maintainRegions);
     setBracket(populateBracket(data.teams));
   }, []);
 
