@@ -52,6 +52,12 @@ export default function Navigation() {
         >
           Bracket
         </Link>
+        <Link
+          href="/draft"
+          className="text-3xl hover:text-gray-600 transition-colors"
+        >
+          Draft
+        </Link>
       </div>
       
       {/* Desktop layout - home button on left, nav centered */}
@@ -91,6 +97,12 @@ export default function Navigation() {
             className="text-4xl hover:text-gray-600 transition-colors"
           >
             Bracket
+          </Link>
+          <Link
+            href="/draft"
+            className="text-4xl hover:text-gray-600 transition-colors"
+          >
+            Draft
           </Link>
         </div>
       </div>
