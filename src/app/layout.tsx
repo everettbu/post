@@ -1,9 +1,9 @@
 import { Bebas_Neue } from "next/font/google";
 import "./globals.css";
 import Navigation from "@/components/Navigation";
+import PasswordGate from "@/components/PasswordGate";
 import { Metadata, Viewport } from 'next';
 import { getRandomOgImage } from '@/lib/get-random-og-image';
-import FlappyWallProvider from '@/components/FlappyWallProvider';
 
 const bebasNeue = Bebas_Neue({ 
   weight: '400',
@@ -59,10 +59,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={bebasNeue.className}>
-        <FlappyWallProvider>
+        <PasswordGate>
           <Navigation />
           {children}
-        </FlappyWallProvider>
+        </PasswordGate>
       </body>
     </html>
   );

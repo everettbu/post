@@ -15,6 +15,7 @@ export default function PhotoAnimation() {
   const animatedPhotosRef = useRef<AnimatedPhoto[]>([]);
   const [photos, setPhotos] = useState<string[]>([]);
   const photoIndexRef = useRef(0);
+  const nextIdRef = useRef(0);
 
   // Load photos from API
   useEffect(() => {
@@ -73,25 +74,31 @@ export default function PhotoAnimation() {
   useEffect(() => {
     if (photos.length === 0) return;
 
-    let localNextId = 0;
+    let burstMode = false;
+
+    // Check if we just unlocked - trigger burst mode
+    if (sessionStorage.getItem('justUnlocked') === 'true') {
+      burstMode = true;
+      sessionStorage.removeItem('justUnlocked');
+    }
 
     const addPhoto = () => {
       const nextPhoto = getNextPhoto();
       if (!nextPhoto) return;
-      
+
       let randomX = 0;
       let randomY = 0;
       let attempts = 0;
       let overlaps = 0;
-      
+
       do {
-        randomX = Math.random() * 70 + 15; // Reduced range for better distribution
-        randomY = Math.random() * 50 + 35; // Keep away from edges
+        randomX = Math.random() * 70 + 15;
+        randomY = Math.random() * 50 + 35;
         overlaps = checkOverlap(randomX, randomY, animatedPhotosRef.current);
         attempts++;
-      } while (overlaps >= 1 && attempts < 30); // Allow max 1 overlap, more attempts to find good spot
-      
-      const photoId = localNextId++;
+      } while (overlaps >= 1 && attempts < 30);
+
+      const photoId = nextIdRef.current++;
       const newPhoto: AnimatedPhoto = {
         id: photoId,
         src: nextPhoto,
@@ -106,9 +113,22 @@ export default function PhotoAnimation() {
       }, 10000);
     };
 
-    // Start with a slight delay for first photo
+    // Burst mode: fire all photos rapidly in 2 seconds
+    if (burstMode) {
+      const burstCount = Math.min(photos.length, 12);
+      const burstInterval = 2000 / burstCount;
+
+      for (let i = 0; i < burstCount; i++) {
+        setTimeout(addPhoto, i * burstInterval);
+      }
+
+      // After burst, continue with normal interval
+      const normalInterval = setInterval(addPhoto, 1500);
+      return () => clearInterval(normalInterval);
+    }
+
+    // Normal mode
     const timeout = setTimeout(addPhoto, 100);
-    
     const interval = setInterval(addPhoto, 1500);
 
     return () => {

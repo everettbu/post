@@ -154,21 +154,10 @@ export default function Bracket({ initialBracket = 'food' }: BracketProps) {
   }, [teams]);
 
   const randomizeTeams = useCallback(() => {
-    let newTeams: string[];
-
-    if (maintainRegions) {
-      const region1 = shuffleArray(teams.slice(0, 16));
-      const region2 = shuffleArray(teams.slice(16, 32));
-      const region3 = shuffleArray(teams.slice(32, 48));
-      const region4 = shuffleArray(teams.slice(48, 64));
-      newTeams = [...region1, ...region2, ...region3, ...region4];
-    } else {
-      newTeams = shuffleArray(teams);
-    }
-
+    const newTeams = shuffleArray(teams);
     setTeams(newTeams);
     setBracket(populateBracket(newTeams));
-  }, [teams, maintainRegions]);
+  }, [teams]);
 
   const selectWinner = useCallback((
     section: string,
